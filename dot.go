@@ -25,6 +25,10 @@ func (d DotNotation) Root() NumberForm {
 	return x
 }
 
+func (d DotNotation) Len() int {
+	return len(d)
+}
+
 /*
 Leaf returns the leaf-node (-1) NumberForm instance.
 */
