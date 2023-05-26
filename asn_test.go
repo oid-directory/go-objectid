@@ -64,3 +64,50 @@ func TestASN1Notation_bogus(t *testing.T) {
 		return
 	}
 }
+
+func TestASN1Notation_Ancestry(t *testing.T) {
+	asn, err := NewASN1Notation(testASN1JesseExample)
+	if err != nil {
+		t.Errorf("%s failed: %s",
+			t.Name(), err.Error())
+	}
+	anc := asn.Ancestry()
+
+	want := 8
+	got := len(anc)
+
+	if want != got {
+		t.Errorf("%s failed: wanted length of %d, got %d",
+			t.Name(), want, got)
+	}
+}
+
+func TestASN1Notation_NewSubordinate(t *testing.T) {
+	asn, _ := NewASN1Notation(testASN1JesseExample)
+	leaf := asn.NewSubordinate(`friedChicken(5)`)
+
+	want := `{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999) friedChicken(5)}`
+	got := leaf.String()
+
+	if want != got {
+		t.Errorf("%s failed: wanted %s, got %s",
+			t.Name(), want, got)
+	}
+}
+
+func TestASN1Notation_IsZero(t *testing.T) {
+	var asn ASN1Notation
+	if !asn.IsZero() {
+		t.Errorf("%s failed: bogus IsZero return",
+			t.Name())
+	}
+}
+
+func TestASN1Notation_AncestorOf(t *testing.T) {
+	asn, _ := NewASN1Notation(`{joint-iso-itu-t(2) asn1(1)}`)
+	child, _ := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1)}`)
+	if asn.AncestorOf(child) {
+		t.Errorf("%s failed: ancestry check returned bogus result",
+			t.Name())
+	}
+}

@@ -5,7 +5,7 @@ nf.go provides NumberForm methods and types.
 
 NOTE: uint128-related code written by Luke Champine, per https://github.com/lukechampine/uint128.
 It has been incorporated into this package (unexported), and simplified to serve in the capacity
-of OID arc storage.
+of OID numberForm storage.
 */
 
 import (
@@ -27,8 +27,8 @@ type NumberForm struct {
 }
 
 // isZero returns true if a == 0.
-func (a *NumberForm) IsZero() bool {
-	if a == nil {
+func (a NumberForm) IsZero() bool {
+	if &a == nil {
 		return true
 	}
 
@@ -38,52 +38,78 @@ func (a *NumberForm) IsZero() bool {
 }
 
 /*
-Equal returns true if a == v.
+Equal returns a boolean value indicative of whether the receiver is equal to
+the value provided. Valid input types are string, uint64, int and NumberForm.
 
-NumberForm values can be compared directly with ==, but use of the
-Equals method // is preferred for consistency.
+Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Equal(v NumberForm) bool {
-	return a == v
-}
+func (a NumberForm) Equal(n any) bool {
+	switch tv := n.(type) {
+	case NumberForm:
+		return a == tv
+	case string:
+		if nf, err := NewNumberForm(tv); err == nil {
+			return a == nf
+		}
+	case uint64:
+		return a.lo == tv && a.hi == 0
+	case int:
+		if 0 <= tv {
+			return a.lo == uint64(tv) && a.hi == 0
+		}
+	}
 
-// Equal64 returns true if a == v.
-func (a NumberForm) Equal64(v uint64) bool {
-	return a.lo == v && a.hi == 0
+	return false
 }
 
 /*
-Compare compares a and v and returns:
+Gt returns a boolean value indicative of whether the receiver is greater than
+the value provided. Valid input types are string, uint64, int and NumberForm.
 
-	-1 if a <  v
-	 0 if a == v
-	+1 if a >  v
+Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Compare(v NumberForm) int {
-	if a == v {
-		return 0
-	} else if a.hi < v.hi || (a.hi == v.hi && a.lo < v.lo) {
-		return -1
-	} else {
-		return 1
+func (a NumberForm) Gt(n any) bool {
+	switch tv := n.(type) {
+	case NumberForm:
+		return a.hi > tv.hi || (a.hi == tv.hi && a.lo > tv.lo)
+	case string:
+		if nf, err := NewNumberForm(tv); err == nil {
+			return a.hi > nf.hi || (a.hi == nf.hi && a.lo > nf.lo)
+		}
+	case uint64:
+		return a.lo > tv && a.hi == uint64(0)
+	case int:
+		if 0 <= tv {
+			return a.lo > uint64(tv) && a.hi == uint64(0)
+		}
 	}
+	return false
 }
 
 /*
-Compare64 compares a and v and returns:
+Lt returns a boolean value indicative of whether the receiver is less than
+the value provided. Valid input types are string, uint64, int and NumberForm.
 
-	-1 if a <  v
-	 0 if a == v
-	+1 if a >  v
+Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Compare64(v uint64) int {
-	if a.hi == 0 && a.lo == v {
-		return 0
-	} else if a.hi == 0 && a.lo < v {
-		return -1
-	} else {
-		return 1
+func (a NumberForm) Lt(n any) bool {
+	switch tv := n.(type) {
+	case NumberForm:
+		return a.hi < tv.hi || (a.hi == tv.hi && a.lo < tv.lo)
+	case string:
+		if nf, err := NewNumberForm(tv); err == nil {
+			return a.hi < nf.hi || (a.hi == nf.hi && a.lo < nf.lo)
+		} else {
+			printf("%s", err.Error())
+		}
+	case uint64:
+		return a.lo < tv && a.hi == uint64(0)
+	case int:
+		if 0 <= tv {
+			return a.lo < uint64(tv) && a.hi == uint64(0)
+		}
 	}
+	return false
 }
 
 /*
@@ -137,8 +163,8 @@ func (a NumberForm) String() string {
 
 /*
 Scan implements fmt.Scanner, and is only present to allow conversion
-of an NumberForm into a string value per fmt.Sscan. Users need not execute
-this method directly.
+of an NumberForm into a string value per fmt.Sscan.  Users need not
+execute this method directly.
 */
 func (a *NumberForm) Scan(s fmt.ScanState, ch rune) error {
 	return sscan(s, ch, a)
@@ -161,16 +187,17 @@ func newNumberForm(lo, hi uint64) NumberForm {
 }
 
 /*
-ParseNumberForm converts v into an instance of NumberForm, which
+NewNumberForm converts v into an instance of NumberForm, which
 is returned alongside an error.
 
 Acceptable input types are string, int and uint64. No decimal value,
 whether string or int, can ever be negative.
 */
-func ParseNumberForm(v any) (a NumberForm, err error) {
+func NewNumberForm(v any) (a NumberForm, err error) {
 	switch tv := v.(type) {
 	case string:
 		_, err = fmt.Sscan(tv, &a)
+		a.parsed = err == nil
 	case int:
 		if tv < 0 {
 			err = errorf("A NumberForm cannot be negative")
@@ -180,8 +207,6 @@ func ParseNumberForm(v any) (a NumberForm, err error) {
 	case uint64:
 		a = newNumberForm(tv, 0)
 	}
-
-	a.parsed = err == nil
 
 	return
 }

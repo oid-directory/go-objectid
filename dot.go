@@ -46,8 +46,19 @@ func (d DotNotation) Parent() NumberForm {
 }
 
 /*
-NewDotNotation returns an instance of *DotNotation alongside a boolean value
-indicative of success.
+IsZero returns a boolean indicative of whether the receiver
+is unset.
+*/
+func (d DotNotation) IsZero() bool {
+	if &d == nil {
+		return true
+	}
+	return d.Len() == 0
+}
+
+/*
+NewDotNotation returns an instance of *DotNotation alongside a boolean
+value indicative of success.
 */
 func NewDotNotation(id string) (d *DotNotation, err error) {
 	if len(id) == 0 {
@@ -58,7 +69,7 @@ func NewDotNotation(id string) (d *DotNotation, err error) {
 	var t *DotNotation = new(DotNotation)
 	for i := 0; i < len(ids); i++ {
 		var a NumberForm
-		if a, err = ParseNumberForm(ids[i]); err != nil {
+		if a, err = NewNumberForm(ids[i]); err != nil {
 			break
 		}
 		*t = append(*t, a)
@@ -73,7 +84,11 @@ func NewDotNotation(id string) (d *DotNotation, err error) {
 }
 
 /*
-IntSlice returns slices of integer values based upon the contents of the receiver
+IntSlice returns slices of integer values and an error. The integer values are based
+upon the contents of the receiver. Note that if any single arc number overflows int,
+a zero slice is returned.
+
+Successful output can be cast as an instance of asn1.ObjectIdentifier, if desired.
 */
 func (d DotNotation) IntSlice() (slice []int, err error) {
 	if len(d) == 0 {
@@ -97,8 +112,9 @@ func (d DotNotation) IntSlice() (slice []int, err error) {
 }
 
 /*
-Index returns the nth index from the receiver, alongside a boolean value
-indicative of success. This method supports the use of negative indices.
+Index returns the Nth index from the receiver, alongside a boolean
+value indicative of success. This method supports the use of negative
+indices.
 */
 func (d DotNotation) Index(idx int) (a NumberForm, ok bool) {
 	L := len(d)
@@ -123,4 +139,100 @@ func (d DotNotation) Index(idx int) (a NumberForm, ok bool) {
 
 	ok = true
 	return
+}
+
+/*
+Ancestry returns slices of DotNotation values ordered from leaf
+node (first) to root node (last).
+
+Empty slices of DotNotation are returned if the dotNotation value
+within the receiver is less than two (2) NumberForm values in length.
+*/
+func (d DotNotation) Ancestry() (anc []DotNotation) {
+	if d.Len() == 0 {
+		return
+	}
+
+	for i := d.Len(); i > 0; i-- {
+		anc = append(anc, d[:i])
+	}
+
+	return
+}
+
+/*
+AncestorOf returns a boolean value indicative of whether the receiver
+is an ancestor of the input value, which can be string or DotNotation.
+*/
+func (d DotNotation) AncestorOf(dot any) bool {
+	if d.IsZero() {
+		return false
+	}
+
+	var D *DotNotation
+
+	switch tv := dot.(type) {
+	case string:
+		var err error
+		if D, err = NewDotNotation(tv); err != nil {
+			return false
+		}
+	case *DotNotation:
+		if tv == nil {
+			return false
+		}
+		D = tv
+	case DotNotation:
+		if tv.Len() == 0 {
+			return false
+		}
+		*D = tv
+	default:
+		return false
+	}
+
+	if D.Len() <= d.Len() {
+		return false
+	}
+
+	for i := 0; i < d.Len(); i++ {
+		x, _ := d.Index(i)
+		y, ok := D.Index(i)
+		if !ok {
+			return false
+		}
+		if !x.Equal(y) {
+			return false
+		}
+	}
+
+	return true
+}
+
+/*
+NewSubordinate returns a new instance of DotNotation based upon the
+contents of the receiver as well as the input NumberForm subordinate
+value. This creates a fully-qualified child DotNotation value of the
+receiver.
+*/
+func (d DotNotation) NewSubordinate(nf any) *DotNotation {
+	// Don't bother processing
+	if d.Len() == 0 {
+		return nil
+	}
+
+	// Prepare the new leaf numberForm,
+	// or die trying.
+	a, err := NewNumberForm(nf)
+	if err != nil {
+		return nil
+	}
+
+	D := make(DotNotation, d.Len()+1, d.Len()+1)
+	for i := 0; i < d.Len(); i++ {
+		D[i] = d[i]
+	}
+	D[D.Len()-1] = a
+
+	return &D
 }

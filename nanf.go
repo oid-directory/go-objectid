@@ -99,7 +99,7 @@ func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
 
 	// parse the string numberForm value into
 	// an instance of NumberForm, or bail out.
-	prid, err := ParseNumberForm(n)
+	prid, err := NewNumberForm(n)
 	if err != nil {
 		return
 	}
@@ -158,7 +158,9 @@ alongside an error. Valid input forms are:
 
 • numberForm (e.g.: 1)
 
-NumberForm components CANNOT be negative and CANNOT overflow NumberForm (uint128).
+NumberForm components CANNOT be negative and CANNOT overflow
+NumberForm (uint128). Permitted input types are string, uint64
+and (non-negative) int.
 */
 func NewNameAndNumberForm(x any) (nanf *NameAndNumberForm, err error) {
 
@@ -168,7 +170,7 @@ func NewNameAndNumberForm(x any) (nanf *NameAndNumberForm, err error) {
 			nanf, err = parseNaNFstr(tv)
 		} else {
 			var a NumberForm
-			a, err = ParseNumberForm(tv)
+			a, err = NewNumberForm(tv)
 			if err != nil {
 				break
 			}
@@ -179,7 +181,7 @@ func NewNameAndNumberForm(x any) (nanf *NameAndNumberForm, err error) {
 		nanf.primaryIdentifier = tv
 	case uint64:
 		nanf = new(NameAndNumberForm)
-		u, _ := ParseNumberForm(tv) // skip error checking, we know it won't overflow.
+		u, _ := NewNumberForm(tv) // skip error checking, we know it won't overflow.
 		nanf.primaryIdentifier = u
 	case int:
 		if tv < 0 {

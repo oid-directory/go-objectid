@@ -1,10 +1,12 @@
 package objectid
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func ExampleParseNumberForm() {
+func ExampleNewNumberForm() {
 	// single UUID integer parse example
-	arc, err := ParseNumberForm(`987895962269883002155146617097157934`)
+	arc, err := NewNumberForm(`987895962269883002155146617097157934`)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -139,4 +141,60 @@ func ExampleDotNotation_IntSlice_overflow() {
 		return
 	}
 	// Output: strconv.Atoi: parsing "987895962269883002155146617097157934": value out of range
+}
+
+func ExampleDotNotation_Ancestry() {
+	dot, err := NewDotNotation(`1.3.6.1.4.1.56521`)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	anc := dot.Ancestry()
+	fmt.Printf("%s", anc[len(anc)-2])
+	// Output: 1.3
+}
+
+func ExampleASN1Notation_Ancestry() {
+	asn, err := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	anc := asn.Ancestry()
+	fmt.Printf("%s", anc[len(anc)-2])
+	// Output: {iso(1) identified-organization(3)}
+}
+
+func ExampleASN1Notation_NewSubordinate() {
+	asn, err := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("%s", asn.NewSubordinate(`friedChicken(5)`))
+	// Output: {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999) friedChicken(5)}
+}
+
+func ExampleDotNotation_NewSubordinate() {
+	dot, err := NewDotNotation(`1.3.6.1.4.1.56521.999`)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("%s", dot.NewSubordinate(5))
+	// Output: 1.3.6.1.4.1.56521.999.5
+}
+
+func ExampleASN1Notation_AncestorOf() {
+	asn, _ := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1)}`)
+	child, _ := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)}`)
+	fmt.Printf("%t", asn.AncestorOf(child))
+	// Output: true
+}
+
+func ExampleDotNotation_AncestorOf() {
+	dot, _ := NewDotNotation(`1.3.6`)
+	child, _ := NewDotNotation(`2.1.0.1`)
+	fmt.Printf("%t", dot.AncestorOf(child))
+	// Output: false
 }

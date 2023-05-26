@@ -5,18 +5,19 @@ OID contains an underlying ASN1Notation value, and extends convenient methods al
 interrogation and verification.
 */
 type OID struct {
-	nanf ASN1Notation
+	nanf   ASN1Notation
+	parsed bool
 }
 
 /*
 IsZero checks the receiver for nilness and returns a boolean indicative of the result.
 */
-func (id *OID) IsZero() (is bool) {
-	if id == nil {
+func (id OID) IsZero() (is bool) {
+	if &id == nil {
 		return false
 	}
 
-	is = len(id.nanf) == 0
+	is = len(id.nanf) == 0 && id.parsed
 	return
 }
 
@@ -25,7 +26,7 @@ Dot returns a DotNotation instance based on the contents of the underlying ASN1N
 instance found within the receiver.
 */
 func (id OID) Dot() DotNotation {
-	if len(id.nanf) == 0 {
+	if (&id).IsZero() {
 		return DotNotation{}
 	}
 
@@ -40,11 +41,14 @@ func (id OID) Dot() DotNotation {
 ASN returns the underlying ASN1Notation instance found within the receiver.
 */
 func (id OID) ASN() ASN1Notation {
+	if (&id).IsZero() {
+		return ASN1Notation{}
+	}
 	return id.nanf
 }
 
 /*
-Valid returns a boolean value indicative of whether the receiver's length is greater than or equal to one (1) slice member.
+Valid returns a boolean value indicative of whether the receiver's state is considered value.
 */
 func (id OID) Valid() bool {
 	if id.IsZero() {
@@ -55,7 +59,7 @@ func (id OID) Valid() bool {
 		return false
 	}
 	for i := 0; i < 3; i++ {
-		if nanf.NumberForm().Equal64(uint64(i)) {
+		if nanf.NumberForm().Equal(i) {
 			return true
 		}
 	}
@@ -112,11 +116,11 @@ NewOID creates an instance of OID and returns it alongside an error.
 
 The correct raw input syntax is the ASN.1 NameAndNumberForm sequence syntax, i.e.:
 
-	{ iso(1) identified-organization(3) dod(6) }
+	{iso(1) identified-organization(3) dod(6)}
 
 Not all NameAndNumberForm values (arcs) require actual names; they can be numbers alone or in the so-called nameAndNumber syntax (name(Number)). For example:
 
-	{ iso(1) identified-organization(3) 6 }
+	{iso(1) identified-organization(3) 6}
 
 ... is perfectly valid, but generally NOT recommended when clarity or precision is desired.
 */
@@ -152,6 +156,7 @@ func NewOID(x any) (o *OID, err error) {
 	}
 
 	o = new(OID)
+	o.parsed = true
 	*o = *t
 
 	return
