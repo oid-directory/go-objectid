@@ -1,6 +1,6 @@
 # go-objectid
 
-[![Go Report Card](https://goreportcard.com/badge/JesseCoretta/go-objectid)](https://goreportcard.com/report/github.com/JesseCoretta/go-objectid) [![GoDoc](https://godoc.org/github.com/JesseCoretta/go-objectid?status.svg)](https://godoc.org/github.com/JesseCoretta/go-objectid)
+[![Go Report Card](https://goreportcard.com/badge/JesseCoretta/go-objectid)](https://goreportcard.com/report/github.com/JesseCoretta/go-objectid) [![GoDoc](https://godoc.org/github.com/JesseCoretta/go-objectid?status.svg)](https://godoc.org/github.com/JesseCoretta/go-objectid) ![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)
 
 Package objectid offers a convenient ASN.1 Object Identifier type and associated methods.
 
