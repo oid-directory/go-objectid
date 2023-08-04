@@ -195,9 +195,13 @@ func (d DotNotation) AncestorOf(dot any) bool {
 		return false
 	}
 
+	return d.matchDotNot(D)
+}
+
+func (d DotNotation) matchDotNot(dot *DotNotation) bool {
 	for i := 0; i < d.Len(); i++ {
 		x, _ := d.Index(i)
-		y, ok := D.Index(i)
+		y, ok := dot.Index(i)
 		if !ok {
 			return false
 		}

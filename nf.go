@@ -70,12 +70,8 @@ Any input that represents a negative number guarantees a false return.
 */
 func (a NumberForm) Gt(n any) bool {
 	switch tv := n.(type) {
-	case NumberForm:
-		return a.hi > tv.hi || (a.hi == tv.hi && a.lo > tv.lo)
-	case string:
-		if nf, err := NewNumberForm(tv); err == nil {
-			return a.hi > nf.hi || (a.hi == nf.hi && a.lo > nf.lo)
-		}
+	case NumberForm, string:
+		return a.gtLt(tv, false)
 	case uint64:
 		return a.lo > tv && a.hi == uint64(0)
 	case int:
@@ -94,14 +90,8 @@ Any input that represents a negative number guarantees a false return.
 */
 func (a NumberForm) Lt(n any) bool {
 	switch tv := n.(type) {
-	case NumberForm:
-		return a.hi < tv.hi || (a.hi == tv.hi && a.lo < tv.lo)
-	case string:
-		if nf, err := NewNumberForm(tv); err == nil {
-			return a.hi < nf.hi || (a.hi == nf.hi && a.lo < nf.lo)
-		} else {
-			printf("%s", err.Error())
-		}
+	case NumberForm, string:
+		return a.gtLt(tv, true)
 	case uint64:
 		return a.lo < tv && a.hi == uint64(0)
 	case int:
@@ -110,6 +100,24 @@ func (a NumberForm) Lt(n any) bool {
 		}
 	}
 	return false
+}
+
+func (a NumberForm) gtLt(x any, lt bool) bool {
+	var nf NumberForm
+
+	switch tv := x.(type) {
+	case string:
+		nf, _ = NewNumberForm(tv)
+	case NumberForm:
+		nf = tv
+	default:
+		return false
+	}
+
+	if lt {
+		return a.hi < nf.hi || (a.hi == nf.hi && a.lo < nf.lo)
+	}
+	return a.hi > nf.hi || (a.hi == nf.hi && a.lo > nf.lo)
 }
 
 /*

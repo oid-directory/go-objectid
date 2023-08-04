@@ -251,9 +251,13 @@ func (a ASN1Notation) AncestorOf(asn any) bool {
 		return false
 	}
 
+	return a.matchASN1(A)
+}
+
+func (a ASN1Notation) matchASN1(asn *ASN1Notation) bool {
 	for i := 0; i < a.Len(); i++ {
 		x, _ := a.Index(i)
-		y, ok := A.Index(i)
+		y, ok := asn.Index(i)
 		if !ok {
 			return false
 		}
