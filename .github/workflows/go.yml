@@ -30,6 +30,8 @@ jobs:
     - name: Upload coverage reports to Codecov
       run: 
         go test -v ./... -race -coverprofile=coverage.txt -covermode=atomic
+        curl -Os https://uploader.codecov.io/latest/linux/codecov
+        chmod +x codecov
         ./codecov -f coverage.txt
       uses: codecov/codecov-action@v3
       env:
