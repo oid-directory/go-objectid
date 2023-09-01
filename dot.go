@@ -248,7 +248,7 @@ Valid returns a boolean value indicative of the following:
 • The first slice in the receiver contains a decimal value that is less than three (3)
 */
 func (d DotNotation) Valid() bool {
-	if d.Len() == 0 {
+	if d.IsZero() {
 		return false
 	}
 

@@ -4,6 +4,16 @@ import (
 	"testing"
 )
 
+func TestDotNotation_badInit(t *testing.T) {
+	var d DotNotation
+	want := false
+	got := d.Valid()
+	if want != got {
+		t.Errorf("%s failed: wanted validity of %t, got %t",
+			t.Name(), want, got)
+	}
+}
+
 func TestDotNotation_Ancestry(t *testing.T) {
 	dot, err := NewDotNotation(`1.3.6.1.4.1.56521.999.5`)
 	if err != nil {
