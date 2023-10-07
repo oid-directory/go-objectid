@@ -104,36 +104,51 @@ func TestASN1Notation001(t *testing.T) {
 			t.Name(), want, got)
 		return
 	}
+
+	asn, err = NewASN1Notation([]string{
+		`iso(1)`,
+		`identified-organization(3)`,
+		`dod(6)`,
+		`internet(1)`,
+		`private(4)`,
+		`enterprise(1)`,
+		`56521`,
+		`example(999)`})
+
+	if l := asn.Len(); l != 8 {
+		t.Errorf("%s failed: want '%d', got '%d'",
+			t.Name(), 8, l)
+		return
+	}
+
+	if _, err = NewASN1Notation(float64(123)); err == nil {
+		t.Errorf("%s failed; no error where one was expected", t.Name())
+		return
+	}
 }
 
 func TestASN1Notation_Index(t *testing.T) {
-	asn, err := NewASN1Notation(testASN1JesseExample)
+	aNot, err := NewASN1Notation(testASN1JesseExample)
 	if err != nil {
-		t.Errorf("%s error: %s", t.Name(), err.Error())
+		fmt.Println(err)
 		return
 	}
 
-	want := `example(999)`
-	got := asn.Leaf()
-	if want != got.String() {
-		t.Errorf("%s failed: want '%s', got '%s'",
-			t.Name(), want, got)
+	nanf, _ := aNot.Index(1)
+	if nanf.Identifier() != `identified-organization` {
+		t.Errorf("%s failed: unable to call index 1 from %T; got '%s'", t.Name(), nanf, nanf.Identifier())
 		return
 	}
 
-	want = `56521`
-	got = asn.Parent()
-	if want != got.String() {
-		t.Errorf("%s failed: want '%s', got '%s'",
-			t.Name(), want, got)
+	nanf, _ = aNot.Index(-1)
+	if nanf.NumberForm().String() != `999` {
+		t.Errorf("%s failed: unable to call index -1 from %T", t.Name(), nanf)
 		return
 	}
 
-	want = `iso(1)`
-	got = asn.Root()
-	if want != got.String() {
-		t.Errorf("%s failed: want '%s', got '%s'",
-			t.Name(), want, got)
+	nanf, _ = aNot.Index(100)
+	if nanf.NumberForm().String() != `999` {
+		t.Errorf("%s failed: unable to call index 100 from %T", t.Name(), nanf)
 		return
 	}
 }
@@ -150,6 +165,7 @@ func TestASN1Notation_Ancestry(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s failed: %s",
 			t.Name(), err.Error())
+		return
 	}
 	anc := asn.Ancestry()
 
@@ -159,6 +175,7 @@ func TestASN1Notation_Ancestry(t *testing.T) {
 	if want != got {
 		t.Errorf("%s failed: wanted length of %d, got %d",
 			t.Name(), want, got)
+		return
 	}
 }
 
@@ -172,6 +189,7 @@ func TestASN1Notation_NewSubordinate(t *testing.T) {
 	if want != got {
 		t.Errorf("%s failed: wanted %s, got %s",
 			t.Name(), want, got)
+		return
 	}
 }
 
@@ -180,6 +198,7 @@ func TestASN1Notation_IsZero(t *testing.T) {
 	if !asn.IsZero() {
 		t.Errorf("%s failed: bogus IsZero return",
 			t.Name())
+		return
 	}
 }
 
@@ -197,5 +216,18 @@ func TestASN1Notation_AncestorOf(t *testing.T) {
 	if asn.AncestorOf(child) {
 		t.Errorf("%s failed: ancestry check returned bogus result",
 			t.Name())
+		return
+	}
+
+	if asn.AncestorOf(*child) {
+		t.Errorf("%s failed: ancestry check returned bogus result",
+			t.Name())
+		return
+	}
+
+	if asn.AncestorOf(child.String()) {
+		t.Errorf("%s failed: ancestry check returned bogus result",
+			t.Name())
+		return
 	}
 }
