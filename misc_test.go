@@ -127,7 +127,7 @@ func TestIsIdentifier(t *testing.T) {
 		`enterprise`,
 		`Enterprise`,
 		`iso`,
-		`ISO`,
+		`itu-`,
 		`telcoCompany`,
 		`-enterprise`,
 		`identified-organization`,
@@ -135,6 +135,7 @@ func TestIsIdentifier(t *testing.T) {
 		`joint-iso-itu-t`,
 		``,
 		`itu-t`,
+		`itu?t`,
 	} {
 		var err error
 		is := isIdentifier(candidate)
