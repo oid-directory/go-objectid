@@ -134,22 +134,17 @@ func TestASN1Notation_Index(t *testing.T) {
 		return
 	}
 
-	nanf, _ := aNot.Index(1)
-	if nanf.Identifier() != `identified-organization` {
-		t.Errorf("%s failed: unable to call index 1 from %T; got '%s'", t.Name(), nanf, nanf.Identifier())
-		return
-	}
-
-	nanf, _ = aNot.Index(-1)
-	if nanf.NumberForm().String() != `999` {
-		t.Errorf("%s failed: unable to call index -1 from %T", t.Name(), nanf)
-		return
-	}
-
-	nanf, _ = aNot.Index(100)
-	if nanf.NumberForm().String() != `999` {
-		t.Errorf("%s failed: unable to call index 100 from %T", t.Name(), nanf)
-		return
+	for key, value := range map[int]string{
+		1:   `identified-organization`,
+		-1:  `example`,
+		-18: `iso`,
+		100: `example`,
+	} {
+		if nanf, _ := aNot.Index(key); nanf.Identifier() != value {
+			t.Errorf("%s failed: unable to call index %d from %T;\nwant '%s'\ngot '%s'",
+				t.Name(), key, nanf, value, nanf.Identifier())
+			return
+		}
 	}
 }
 

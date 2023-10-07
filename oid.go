@@ -139,16 +139,14 @@ func NewOID(x any) (o *OID, err error) {
 		}
 	}
 
-	if err != nil {
-		return
-	}
-
-	err = errorf("%T instance did not pass validity checks: %#v", t, *t)
-	if t.Valid() {
-		o = new(OID)
-		o.parsed = true
-		*o = *t
-		err = nil
+	if err == nil {
+		err = errorf("%T instance did not pass validity checks: %#v", t, *t)
+		if t.Valid() {
+			o = new(OID)
+			o.parsed = true
+			*o = *t
+			err = nil
+		}
 	}
 
 	return

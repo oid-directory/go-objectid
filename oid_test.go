@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewOID(t *testing.T) {
-	for _, typ := range []any{
+	for idx, typ := range []any{
 		[]string{
 			`iso(1)`,
 			`identified-organization(3)`,
@@ -17,12 +17,16 @@ func TestNewOID(t *testing.T) {
 			`56521`,
 			`example(999)`,
 		},
+		nil,
 		`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`,
+		float32(1),
 	} {
-
 		_, err := NewOID(typ)
-		if err != nil {
+		if err != nil && idx%2 == 0 {
 			t.Errorf("%s failed: %v", t.Name(), err)
+			return
+		} else if err == nil && idx%2 != 0 {
+			t.Errorf("%s failed: no error where one was expected", t.Name())
 			return
 		}
 	}
