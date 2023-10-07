@@ -49,11 +49,11 @@ func (d DotNotation) Parent() NumberForm {
 IsZero returns a boolean indicative of whether the receiver
 is unset.
 */
-func (d DotNotation) IsZero() bool {
-	if &d == nil {
-		return true
+func (d DotNotation) IsZero() (is bool) {
+	if &d != nil {
+		is = d.Len() == 0
 	}
-	return d.Len() == 0
+	return
 }
 
 /*
@@ -62,16 +62,15 @@ value indicative of success.
 */
 func NewDotNotation(id string) (d *DotNotation, err error) {
 	if len(id) == 0 {
+		err = errorf("input value is zero-length")
 		return
 	}
 
 	ids := split(id, `.`)
 	var t *DotNotation = new(DotNotation)
-	for i := 0; i < len(ids); i++ {
+	for i := 0; i < len(ids) && err == nil; i++ {
 		var a NumberForm
-		if a, err = NewNumberForm(ids[i]); err != nil {
-			break
-		}
+		a, err = NewNumberForm(ids[i])
 		*t = append(*t, a)
 	}
 
@@ -120,24 +119,22 @@ func (d DotNotation) Index(idx int) (a NumberForm, ok bool) {
 	L := len(d)
 
 	// Bail if receiver is empty.
-	if L == 0 {
-		return
-	}
-
-	if idx < 0 {
-		var x int = L + idx
-		if x < 0 {
-			a = d[0]
+	if L > 0 {
+		if idx < 0 {
+			var x int = L + idx
+			if x < 0 {
+				a = d[0]
+			} else {
+				a = d[x]
+			}
+		} else if idx > L {
+			a = d[L-1]
 		} else {
-			a = d[x]
+			a = d[idx]
 		}
-	} else if idx > L {
-		a = d[L-1]
-	} else {
-		a = d[idx]
+		ok = true
 	}
 
-	ok = true
 	return
 }
 
@@ -149,12 +146,10 @@ Empty slices of DotNotation are returned if the dotNotation value
 within the receiver is less than two (2) NumberForm values in length.
 */
 func (d DotNotation) Ancestry() (anc []DotNotation) {
-	if d.Len() == 0 {
-		return
-	}
-
-	for i := d.Len(); i > 0; i-- {
-		anc = append(anc, d[:i])
+	if d.Len() > 0 {
+		for i := d.Len(); i > 0; i-- {
+			anc = append(anc, d[:i])
+		}
 	}
 
 	return
@@ -164,38 +159,35 @@ func (d DotNotation) Ancestry() (anc []DotNotation) {
 AncestorOf returns a boolean value indicative of whether the receiver
 is an ancestor of the input value, which can be string or DotNotation.
 */
-func (d DotNotation) AncestorOf(dot any) bool {
-	if d.IsZero() {
-		return false
-	}
+func (d DotNotation) AncestorOf(dot any) (is bool) {
+	if !d.IsZero() {
+		var D *DotNotation
 
-	var D *DotNotation
-
-	switch tv := dot.(type) {
-	case string:
-		var err error
-		if D, err = NewDotNotation(tv); err != nil {
+		switch tv := dot.(type) {
+		case string:
+			var err error
+			if D, err = NewDotNotation(tv); err != nil {
+				return false
+			}
+		case *DotNotation:
+			if tv != nil {
+				D = tv
+			}
+		case DotNotation:
+			if tv.Len() > 0 {
+				*D = tv
+			}
+		default:
 			return false
 		}
-	case *DotNotation:
-		if tv == nil {
+		if D.Len() <= d.Len() {
 			return false
 		}
-		D = tv
-	case DotNotation:
-		if tv.Len() == 0 {
-			return false
-		}
-		*D = tv
-	default:
-		return false
+
+		is = d.matchDotNot(D)
 	}
 
-	if D.Len() <= d.Len() {
-		return false
-	}
-
-	return d.matchDotNot(D)
+	return
 }
 
 func (d DotNotation) matchDotNot(dot *DotNotation) bool {
@@ -219,26 +211,21 @@ contents of the receiver as well as the input NumberForm subordinate
 value. This creates a fully-qualified child DotNotation value of the
 receiver.
 */
-func (d DotNotation) NewSubordinate(nf any) *DotNotation {
-	// Don't bother processing
-	if d.Len() == 0 {
-		return nil
+func (d DotNotation) NewSubordinate(nf any) (dot *DotNotation) {
+	if d.Len() > 0 {
+		// Prepare the new leaf numberForm,
+		// or die trying.
+		if a, err := NewNumberForm(nf); err == nil {
+			D := make(DotNotation, d.Len()+1, d.Len()+1)
+			for i := 0; i < d.Len(); i++ {
+				D[i] = d[i]
+			}
+			D[D.Len()-1] = a
+			dot = &D
+		}
 	}
 
-	// Prepare the new leaf numberForm,
-	// or die trying.
-	a, err := NewNumberForm(nf)
-	if err != nil {
-		return nil
-	}
-
-	D := make(DotNotation, d.Len()+1, d.Len()+1)
-	for i := 0; i < d.Len(); i++ {
-		D[i] = d[i]
-	}
-	D[D.Len()-1] = a
-
-	return &D
+	return
 }
 
 /*
@@ -247,10 +234,10 @@ Valid returns a boolean value indicative of the following:
 • Receiver's length is greater than or equal to one (1) slice member, and ...
 • The first slice in the receiver contains a decimal value that is less than three (3)
 */
-func (d DotNotation) Valid() bool {
-	if d.IsZero() {
-		return false
+func (d DotNotation) Valid() (is bool) {
+	if !d.IsZero() {
+		is = d.Root().Lt(3)
 	}
 
-	return d.Root().Lt(3)
+	return
 }

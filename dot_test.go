@@ -58,6 +58,7 @@ func TestDotNotation_badInit(t *testing.T) {
 	if want != got {
 		t.Errorf("%s failed: wanted validity of %t, got %t",
 			t.Name(), want, got)
+		return
 	}
 }
 
@@ -66,6 +67,7 @@ func TestDotNotation_Ancestry(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s failed: %s",
 			t.Name(), err.Error())
+		return
 	}
 	anc := dot.Ancestry()
 
@@ -75,6 +77,7 @@ func TestDotNotation_Ancestry(t *testing.T) {
 	if want != got {
 		t.Errorf("%s failed: wanted length of %d, got %d",
 			t.Name(), want, got)
+		return
 	}
 }
 
@@ -88,6 +91,7 @@ func TestDotNotation_NewSubordinate(t *testing.T) {
 	if want != got {
 		t.Errorf("%s failed: wanted %s, got %s",
 			t.Name(), want, got)
+		return
 	}
 }
 
@@ -96,6 +100,7 @@ func TestDotNotation_IsZero(t *testing.T) {
 	if !dot.IsZero() {
 		t.Errorf("%s failed: bogus IsZero return",
 			t.Name())
+		return
 	}
 }
 
@@ -108,5 +113,12 @@ func TestDotNotation_AncestorOf(t *testing.T) {
 	if !dot.AncestorOf(child) {
 		t.Errorf("%s failed: ancestry check returned bogus result",
 			t.Name())
+		return
 	}
+}
+
+func TestDotNotation_codecov(t *testing.T) {
+	var dot DotNotation
+	_, _ = dot.IntSlice()
+	_ = dot.String()
 }
