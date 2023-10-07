@@ -12,11 +12,10 @@ type OID struct {
 /*
 IsZero checks the receiver for nilness and returns a boolean indicative of the result.
 */
-func (id OID) IsZero() (is bool) {
-	if &id != nil {
-		is = len(id.nanf) == 0 && id.parsed
+func (id *OID) IsZero() (is bool) {
+	if id != nil {
+		is = len(id.nanf) == 0
 	}
-
 	return
 }
 
@@ -25,7 +24,7 @@ Dot returns a DotNotation instance based on the contents of the underlying ASN1N
 instance found within the receiver.
 */
 func (id OID) Dot() (d DotNotation) {
-	if !(&id).IsZero() {
+	if !id.IsZero() {
 		d = make(DotNotation, len(id.nanf))
 		for i := 0; i < len(id.nanf); i++ {
 			d[i] = id.nanf[i].NumberForm()
@@ -39,7 +38,7 @@ func (id OID) Dot() (d DotNotation) {
 ASN returns the underlying ASN1Notation instance found within the receiver.
 */
 func (id OID) ASN() (a ASN1Notation) {
-	if !(&id).IsZero() {
+	if !id.IsZero() {
 		a = id.nanf
 	}
 	return

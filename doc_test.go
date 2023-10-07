@@ -27,39 +27,6 @@ func ExampleNewOID() {
 	// Output: ASN.1 Notation: {joint-iso-itu-t(2) uuid(25) ans(987895962269883002155146617097157934)}
 }
 
-func ExampleOID_Leaf() {
-	a := `{joint-iso-itu-t(2) uuid(25) ans(987895962269883002155146617097157934)}`
-	id, err := NewOID(a)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("Leaf node: %s", id.Leaf())
-	// Output: Leaf node: ans(987895962269883002155146617097157934)
-}
-
-func ExampleOID_Parent() {
-	a := `{joint-iso-itu-t(2) uuid(25) ans(987895962269883002155146617097157934)}`
-	id, err := NewOID(a)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("Leaf node parent: %s", id.Parent())
-	// Output: Leaf node parent: uuid(25)
-}
-
-func ExampleOID_Root() {
-	a := `{joint-iso-itu-t(2) uuid(25) ans(987895962269883002155146617097157934)}`
-	id, err := NewOID(a)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("Root node: %s", id.Root())
-	// Output: Root node: joint-iso-itu-t(2)
-}
-
 func ExampleNewDotNotation() {
 	a := `2.25.987895962269883002155146617097157934`
 	id, err := NewDotNotation(a)
