@@ -93,6 +93,11 @@ func TestDotNotation_NewSubordinate(t *testing.T) {
 			t.Name(), want, got)
 		return
 	}
+
+	if !dot.Valid() {
+		t.Errorf("%s failed %T validity checks", t.Name(), dot)
+		return
+	}
 }
 
 func TestDotNotation_IsZero(t *testing.T) {

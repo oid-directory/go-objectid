@@ -163,44 +163,38 @@ func (d DotNotation) AncestorOf(dot any) (is bool) {
 
 		switch tv := dot.(type) {
 		case string:
-			var err error
-			if D, err = NewDotNotation(tv); err != nil {
-				return false
-			}
+			D, _ = NewDotNotation(tv)
 		case *DotNotation:
 			if tv != nil {
 				D = tv
 			}
 		case DotNotation:
-			if tv.Len() > 0 {
-				*D = tv
+			if tv.Len() >= 0 {
+				D = &tv
 			}
-		default:
-			return false
-		}
-		if D.Len() <= d.Len() {
-			return false
 		}
 
-		is = d.matchDotNot(D)
+		if D.Len() > d.Len() {
+			is = d.matchDotNot(D)
+		}
 	}
 
 	return
 }
 
 func (d DotNotation) matchDotNot(dot *DotNotation) bool {
-	for i := 0; i < d.Len(); i++ {
+	L := d.Len()
+	ct := 0
+	for i := 0; i < L; i++ {
 		x, _ := d.Index(i)
-		y, ok := dot.Index(i)
-		if !ok {
-			return false
-		}
-		if !x.Equal(y) {
-			return false
+		if y, ok := dot.Index(i); ok {
+			if x.Equal(y) {
+				ct++
+			}
 		}
 	}
 
-	return true
+	return ct == L
 }
 
 /*
