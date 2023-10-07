@@ -133,33 +133,30 @@ and (non-negative) int.
 */
 func NewNameAndNumberForm(x any) (nanf *NameAndNumberForm, err error) {
 
+	err = errorf("%T must conform to: identifier LPAREN numberForm RPAREN", nanf)
 	switch tv := x.(type) {
 	case string:
 		if !isNumber(tv) {
 			nanf, err = parseNaNFstr(tv)
 		} else {
 			var a NumberForm
-			a, err = NewNumberForm(tv)
-			if err != nil {
-				break
+			if a, err = NewNumberForm(tv); err == nil {
+				nanf = &NameAndNumberForm{primaryIdentifier: a}
 			}
-			nanf = &NameAndNumberForm{primaryIdentifier: a}
 		}
 	case NumberForm:
 		nanf = new(NameAndNumberForm)
 		nanf.primaryIdentifier = tv
+		err = nil
 	case uint64:
 		nanf = new(NameAndNumberForm)
 		u, _ := NewNumberForm(tv) // skip error checking, we know it won't overflow.
 		nanf.primaryIdentifier = u
+		err = nil
 	case int:
-		if tv < 0 {
-			err = errorf("NumberForm component of %T CANNOT be negative", nanf)
-			break
+		if tv >= 0 {
+			nanf, err = NewNameAndNumberForm(uint64(tv))
 		}
-		// cast int as uint64 and resubmit
-		// to this function.
-		return NewNameAndNumberForm(uint64(tv))
 	default:
 		err = errorf("Unsupported NameAndNumberForm input type '%T'", tv)
 	}
