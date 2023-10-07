@@ -104,9 +104,23 @@ func ExampleNumberForm_Gt() {
 	// Output: 4658 > 4501: true
 }
 
+func ExampleNumberForm_Gt_byString() {
+	nf, _ := NewNumberForm(`4658`)
+	oth := `4501`
+	fmt.Printf("%s > %s: %t", nf, oth, nf.Gt(oth))
+	// Output: 4658 > 4501: true
+}
+
 func ExampleNumberForm_Lt() {
 	nf, _ := NewNumberForm(4658)
 	oth := 4501
 	fmt.Printf("%s < %d: %t", nf, oth, nf.Lt(oth))
+	// Output: 4658 < 4501: false
+}
+
+func ExampleNumberForm_Lt_byString() {
+	nf, _ := NewNumberForm(`4658`)
+	oth := `4501`
+	fmt.Printf("%s < %s: %t", nf, oth, nf.Lt(oth))
 	// Output: 4658 < 4501: false
 }
