@@ -211,16 +211,15 @@ func condenseWHSP(b string) (a string) {
 sscan is a closure function used by the NumberForm stringer
 for interoperability with fmt.Sscan.
 */
-func sscan(s fmt.ScanState, ch rune, u *NumberForm) error {
+func sscan(s fmt.ScanState, ch rune, u *NumberForm) (err error) {
 	i := new(big.Int)
-	if err := i.Scan(s, ch); err != nil {
-		return err
-	} else if i.Sign() < 0 {
-		return errorf("value cannot be negative")
-	} else if i.BitLen() > 128 {
-		return errorf("value overflows uint128")
+	if err = i.Scan(s, ch); err == nil {
+		err = errorf("Value cannot be negative, nor can it have a bit length >128")
+		if 0 <= i.Sign() && i.BitLen() < 128 {
+			u.lo = i.Uint64()
+			u.hi = i.Rsh(i, 64).Uint64()
+			err = nil
+		}
 	}
-	u.lo = i.Uint64()
-	u.hi = i.Rsh(i, 64).Uint64()
-	return nil
+	return
 }
