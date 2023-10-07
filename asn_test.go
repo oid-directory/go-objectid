@@ -208,6 +208,7 @@ func TestASN1Notation_AncestorOf(t *testing.T) {
 		t.Errorf("%s failed: %v", t.Name(), err)
 		return
 	}
+
 	child, err := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1)}`)
 	if err != nil {
 		t.Errorf("%s failed: %v", t.Name(), err)

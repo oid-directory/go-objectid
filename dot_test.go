@@ -118,8 +118,38 @@ func TestDotNotation_AncestorOf(t *testing.T) {
 }
 
 func TestDotNotation_codecov(t *testing.T) {
-	if _, err := NewDotNotation(``); err == nil {
+	_, err := NewDotNotation(``)
+	if err == nil {
 		t.Errorf("%s failed: zero length OID parsed without error", t.Name())
+		return
+	}
+
+	var X DotNotation
+	_, _ = X.IntSlice()
+}
+
+func TestDotNotation_Index(t *testing.T) {
+	dot, err := NewDotNotation(`1.3.6.1.4.1.56521.999.5`)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	nf, _ := dot.Index(1)
+	if nf.String() != `3` {
+		t.Errorf("%s failed: unable to call index 1 from %T", t.Name(), nf)
+		return
+	}
+
+	nf, _ = dot.Index(-1)
+	if nf.String() != `5` {
+		t.Errorf("%s failed: unable to call index -1 from %T", t.Name(), nf)
+		return
+	}
+
+	nf, _ = dot.Index(100)
+	if nf.String() != `5` {
+		t.Errorf("%s failed: unable to call index 100 from %T", t.Name(), nf)
 		return
 	}
 }

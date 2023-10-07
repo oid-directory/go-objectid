@@ -53,8 +53,8 @@ func (d DotNotation) Parent() NumberForm {
 IsZero returns a boolean indicative of whether the receiver
 is unset.
 */
-func (d DotNotation) IsZero() (is bool) {
-	if &d != nil {
+func (d *DotNotation) IsZero() (is bool) {
+	if d != nil {
 		is = d.Len() == 0
 	}
 	return
@@ -94,8 +94,7 @@ a zero slice is returned.
 Successful output can be cast as an instance of asn1.ObjectIdentifier, if desired.
 */
 func (d DotNotation) IntSlice() (slice []int, err error) {
-	if len(d) == 0 {
-		err = errorf("%T instance is nil", d)
+	if d.IsZero() {
 		return
 	}
 
