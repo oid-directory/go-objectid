@@ -52,11 +52,12 @@ func (a ASN1Notation) Len() int { return len(a) }
 IsZero returns a boolean indicative of whether the receiver
 is unset.
 */
-func (a ASN1Notation) IsZero() bool {
-	if &a == nil {
-		return true
+func (a ASN1Notation) IsZero() (is bool) {
+	if is = &a == nil; !is {
+		is = a.Len() == 0
 	}
-	return a.Len() == 0
+
+	return
 }
 
 /*
@@ -68,21 +69,19 @@ func (a ASN1Notation) Index(idx int) (nanf NameAndNumberForm, ok bool) {
 	L := a.Len()
 
 	// Bail if receiver is empty.
-	if L == 0 {
-		return
-	}
-
-	if idx < 0 {
-		var x int = L + idx
-		if x < 0 {
-			nanf = a[0]
+	if L > 0 {
+		if idx < 0 {
+			var x int = L + idx
+			if x < 0 {
+				nanf = a[0]
+			} else {
+				nanf = a[x]
+			}
+		} else if idx > L {
+			nanf = a[L-1]
 		} else {
-			nanf = a[x]
+			nanf = a[idx]
 		}
-	} else if idx > L {
-		nanf = a[L-1]
-	} else {
-		nanf = a[idx]
 	}
 
 	// Make sure the instance was produced
@@ -104,39 +103,37 @@ func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 	// prepare temporary instance
 	t := new(ASN1Notation)
 
+	var nfs []string
 	switch tv := x.(type) {
 	case string:
-		f := fields(condenseWHSP(trimR(trimL(tv, `{`), `}`)))
-		for i := 0; i < len(f); i++ {
-			var nanf *NameAndNumberForm
-			if nanf, err = NewNameAndNumberForm(f[i]); err != nil {
-				return
-			}
-			*t = append(*t, *nanf)
-		}
+		nfs = fields(condenseWHSP(trimR(trimL(tv, `{`), `}`)))
 	case []string:
-		for i := 0; i < len(tv); i++ {
-			var nanf *NameAndNumberForm
-			if nanf, err = NewNameAndNumberForm(condenseWHSP(tv[i])); err != nil {
-				return
-			}
-			*t = append(*t, *nanf)
-		}
+		nfs = tv
 	default:
 		err = errorf("Unsupported %T input type: %#v\n", x, x)
 		return
 	}
 
-	// verify content is valid
-	if !t.Valid() {
-		err = errorf("%T instance did not pass validity checks: %#v", t, *t)
+	for i := 0; i < len(nfs) && err == nil; i++ {
+		var nanf *NameAndNumberForm
+		if nanf, err = NewNameAndNumberForm(nfs[i]); nanf != nil {
+			*t = append(*t, *nanf)
+		}
+	}
+
+	if err != nil {
 		return
 	}
 
-	// transfer temporary content
-	// to return value instance.
-	a = new(ASN1Notation)
-	*a = *t
+	// verify content is valid
+	err = errorf("%T instance did not pass validity checks: %#v", t, *t)
+	if t.Valid() {
+		// transfer temporary content
+		// to return value instance.
+		a = new(ASN1Notation)
+		*a = *t
+		err = nil
+	}
 
 	return
 }
@@ -145,28 +142,25 @@ func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 Valid returns a boolean value indicative of whether the receiver's
 length is greater than or equal to one (1) slice member.
 */
-func (a ASN1Notation) Valid() bool {
+func (a ASN1Notation) Valid() (is bool) {
 	// Don't waste time on
 	// zero instances.
-	if a.Len() == 0 {
-		return false
-	}
+	if L := a.Len(); L > 0 {
+		// bail out if any of the slice
+		// values are unparsed.
+		for i := 0; i < L; i++ {
+			if !a[i].parsed {
+				return false
+			}
+		}
 
-	// bail out if any of the slice
-	// values are unparsed.
-	for i := 0; i < a.Len(); i++ {
-		if !a[i].parsed {
-			return false
+		if root, ok := a.Index(0); ok {
+			// root cannot be greater than 2
+			is = root.NumberForm().Lt(3)
 		}
 	}
 
-	root, ok := a.Index(0)
-	if !ok {
-		return false
-	}
-
-	// root cannot be greater than 2
-	return root.NumberForm().Lt(3)
+	return
 }
 
 /*
@@ -177,12 +171,10 @@ Empty slices of DotNotation are returned if the dotNotation value
 within the receiver is less than two (2) NumberForm values in length.
 */
 func (a ASN1Notation) Ancestry() (anc []ASN1Notation) {
-	if a.Len() < 2 {
-		return
-	}
-
-	for i := a.Len(); i > 0; i-- {
-		anc = append(anc, a[:i])
+	if a.Len() >= 2 {
+		for i := a.Len(); i > 0; i-- {
+			anc = append(anc, a[:i])
+		}
 	}
 
 	return
@@ -195,23 +187,18 @@ subordinate value. This creates a fully-qualified child ASN1Notation
 value of the receiver.
 */
 func (a ASN1Notation) NewSubordinate(nanf any) *ASN1Notation {
-	// Don't bother processing
-	if a.Len() == 0 {
-		return nil
+	var A ASN1Notation
+	if a.Len() > 0 {
+		// Prepare the new leaf numberForm,
+		// or die trying.
+		if n, err := NewNameAndNumberForm(nanf); err == nil {
+			A = make(ASN1Notation, a.Len()+1, a.Len()+1)
+			for i := 0; i < a.Len(); i++ {
+				A[i] = a[i]
+			}
+			A[A.Len()-1] = *n
+		}
 	}
-
-	// Prepare the new leaf numberForm,
-	// or die trying.
-	n, err := NewNameAndNumberForm(nanf)
-	if err != nil {
-		return nil
-	}
-
-	A := make(ASN1Notation, a.Len()+1, a.Len()+1)
-	for i := 0; i < a.Len(); i++ {
-		A[i] = a[i]
-	}
-	A[A.Len()-1] = *n
 
 	return &A
 }
@@ -234,15 +221,13 @@ func (a ASN1Notation) AncestorOf(asn any) bool {
 			return false
 		}
 	case *ASN1Notation:
-		if tv == nil {
-			return false
+		if tv != nil {
+			A = tv
 		}
-		A = tv
 	case ASN1Notation:
-		if tv.Len() == 0 {
-			return false
+		if tv.Len() >= 0 {
+			A = &tv
 		}
-		A = &tv
 	default:
 		return false
 	}

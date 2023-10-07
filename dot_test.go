@@ -1,8 +1,55 @@
 package objectid
 
 import (
+	"fmt"
 	"testing"
 )
+
+func ExampleDotNotation_Index() {
+	dot, err := NewDotNotation(`1.3.6.1.4.1.56521.999.5`)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	arc, _ := dot.Index(1)
+	fmt.Printf("%s", arc)
+	// Output: 3
+}
+
+func ExampleDotNotation_IsZero() {
+	var dot DotNotation
+	fmt.Printf("Is Zero: %t", dot.IsZero())
+	// Output: Is Zero: true
+}
+
+func ExampleDotNotation_Valid() {
+	var dot DotNotation
+	fmt.Printf("Is Valid: %t", dot.Valid())
+	// Output: Is Valid: false
+}
+
+func ExampleDotNotation_Len() {
+	dot, err := NewDotNotation(`1.3.6.1.4.1.56521.999.5`)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("Length: %d", dot.Len())
+	// Output: Length: 9
+}
+
+func ExampleDotNotation_String() {
+	dot, err := NewDotNotation(`1.3.6.1.4.1.56521.999.5`)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%s", dot)
+	// Output: 1.3.6.1.4.1.56521.999.5
+}
 
 func TestDotNotation_badInit(t *testing.T) {
 	var d DotNotation

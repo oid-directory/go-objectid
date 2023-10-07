@@ -55,9 +55,17 @@ func (nanf NameAndNumberForm) String() (val string) {
 Equal returns a boolean value indicative of whether instance
 n of NameAndNumberForm matches the receiver.
 */
-func (nanf NameAndNumberForm) Equal(n NameAndNumberForm) bool {
-	return nanf.identifier == n.identifier &&
-		nanf.primaryIdentifier.Equal(n.primaryIdentifier)
+func (nanf NameAndNumberForm) Equal(n any) (is bool) {
+	switch tv := n.(type) {
+	case NameAndNumberForm:
+		is = nanf.identifier == tv.identifier &&
+			nanf.primaryIdentifier.Equal(tv.primaryIdentifier)
+	case *NameAndNumberForm:
+		is = nanf.identifier == tv.identifier &&
+			nanf.primaryIdentifier.Equal(tv.primaryIdentifier)
+	}
+
+	return
 }
 
 /*
@@ -92,61 +100,22 @@ func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
 
 	// Parse/verify what appears to be the
 	// identifier string value.
-	var valid bool
-	if valid, err = identifierIsValid(x[:idx-1]); !valid {
+	var identifier string = x[:idx]
+	if !isIdentifier(identifier) {
+		err = errorf("Invalid identifier [%s]; syntax must conform to: LOWER *[ [-] +[ UPPER / LOWER / DIGIT ] ]", identifier)
 		return
 	}
 
 	// parse the string numberForm value into
 	// an instance of NumberForm, or bail out.
-	prid, err := NewNumberForm(n)
-	if err != nil {
-		return
+	var prid NumberForm
+	if prid, err = NewNumberForm(n); err == nil {
+		// Prepare to return valid information.
+		nanf = new(NameAndNumberForm)
+		nanf.parsed = true
+		nanf.primaryIdentifier = prid
+		nanf.identifier = x[:idx]
 	}
-
-	// Prepare to return valid information.
-	nanf = new(NameAndNumberForm)
-	nanf.parsed = true
-	nanf.primaryIdentifier = prid
-	nanf.identifier = x[:idx]
-	return
-}
-
-/*
-identifierIsValid returns a boolean and an error, each indicative of
-parsing outcome based on the input nameForm value (val).
-*/
-func identifierIsValid(val string) (valid bool, err error) {
-	for c := 0; c < len(val)-1; c++ {
-		ch := rune(val[c])
-
-		// The first character CANNOT be a number, nor
-		// can it be an UPPER case character.
-		if c == 0 {
-			if !isLower(ch) {
-				err = errorf("Bad identifier '%s' at char #%d [%c] [hint: must only start with lowercase alpha]", val, c, ch)
-				return
-			}
-		}
-
-		// If identifier is anything other than a-z, A-Z or
-		// 0-9, then bail out.
-		if !(isDigit(ch) || isLetter(ch) || ch == '-') {
-			err = errorf("Bad identifier '%s' at char #%d [%c], unsupported character(s) [hint: must be A-Z, a-z, 0-9 or '-']", val, c, ch)
-			return
-		}
-
-		// The final character MUST NOT be a hyphen (dash)
-		if c == len(val)-1 {
-			if ch == '-' {
-				err = errorf("Bad identifier '%s' at char #%d [%c] [hint: final identifier character cannot be a hyphen]", val, c, ch)
-				return
-			}
-		}
-	}
-
-	// Seems legit.
-	valid = true
 	return
 }
 

@@ -5,7 +5,23 @@ import (
 )
 
 func TestNewOID(t *testing.T) {
-	if _, err := NewOID(`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`); err != nil {
-		t.Errorf("%s failed: %s", t.Name(), err.Error())
+	for _, typ := range []any{
+		[]string{
+			`iso(1)`,
+			`identified-organization(3)`,
+			`dod(6)`,
+			`internet(1)`,
+			`private(4)`,
+			`enterprise(1)`,
+			`56521`,
+			`example(999)`,
+		},
+		`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`,
+	} {
+
+		if _, err := NewOID(typ); err != nil {
+			t.Errorf("%s failed: %v", t.Name(), err)
+			return
+		}
 	}
 }

@@ -27,14 +27,14 @@ type NumberForm struct {
 }
 
 // isZero returns true if a == 0.
-func (a NumberForm) IsZero() bool {
-	if &a == nil {
-		return true
+func (a NumberForm) IsZero() (is bool) {
+	is = true
+	if &a != nil {
+		// NOTE: we do not compare against Zero, because that
+		// is a global variable that could be modified.
+		is = (a.lo == uint64(0) && a.hi == uint64(0))
 	}
-
-	// NOTE: we do not compare against Zero, because that
-	// is a global variable that could be modified.
-	return a.lo == uint64(0) && a.hi == uint64(0)
+	return
 }
 
 /*
@@ -43,23 +43,23 @@ the value provided. Valid input types are string, uint64, int and NumberForm.
 
 Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Equal(n any) bool {
+func (a NumberForm) Equal(n any) (is bool) {
 	switch tv := n.(type) {
 	case NumberForm:
-		return a == tv
+		is = a == tv
 	case string:
 		if nf, err := NewNumberForm(tv); err == nil {
-			return a == nf
+			is = a == nf
 		}
 	case uint64:
-		return a.lo == tv && a.hi == 0
+		is = a.lo == tv && a.hi == 0
 	case int:
 		if 0 <= tv {
-			return a.lo == uint64(tv) && a.hi == 0
+			is = a.lo == uint64(tv) && a.hi == 0
 		}
 	}
 
-	return false
+	return
 }
 
 /*
@@ -68,18 +68,18 @@ the value provided. Valid input types are string, uint64, int and NumberForm.
 
 Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Gt(n any) bool {
+func (a NumberForm) Gt(n any) (is bool) {
 	switch tv := n.(type) {
 	case NumberForm, string:
-		return a.gtLt(tv, false)
+		is = a.gtLt(tv, false)
 	case uint64:
-		return a.lo > tv && a.hi == uint64(0)
+		is = a.lo > tv && a.hi == uint64(0)
 	case int:
 		if 0 <= tv {
-			return a.lo > uint64(tv) && a.hi == uint64(0)
+			is = a.lo > uint64(tv) && a.hi == uint64(0)
 		}
 	}
-	return false
+	return
 }
 
 /*
@@ -88,18 +88,18 @@ the value provided. Valid input types are string, uint64, int and NumberForm.
 
 Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Lt(n any) bool {
+func (a NumberForm) Lt(n any) (is bool) {
 	switch tv := n.(type) {
 	case NumberForm, string:
-		return a.gtLt(tv, true)
+		is = a.gtLt(tv, true)
 	case uint64:
-		return a.lo < tv && a.hi == uint64(0)
+		is = a.lo < tv && a.hi == uint64(0)
 	case int:
 		if 0 <= tv {
-			return a.lo < uint64(tv) && a.hi == uint64(0)
+			is = a.lo < uint64(tv) && a.hi == uint64(0)
 		}
 	}
-	return false
+	return
 }
 
 func (a NumberForm) gtLt(x any, lt bool) bool {

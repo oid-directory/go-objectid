@@ -74,6 +74,59 @@ func isNumber(val string) bool {
 }
 
 /*
+isAlnum returns a Boolean value indicative of whether rune r represents
+an alphanumeric character. Specifically, one (1) of the following ranges
+must evaluate as true:
+
+  - 0-9 (ASCII characters 48 through 57)
+  - A-Z (ASCII characters 65 through 90)
+  - a-z (ASCII characters 97 through 122)
+*/
+func isAlnum(r rune) bool {
+	return isLower(r) || isUpper(r) || isDigit(r)
+}
+
+/*
+isIdentifier scans the input string val and judges whether
+it appears to qualify as an identifier, in that:
+
+- it begins with a lower alpha
+- it contains only alphanumeric characters, hyphens or semicolons
+
+This is used, specifically, it identify an LDAP attributeType (with
+or without a tag), or an LDAP matchingRule.
+*/
+func isIdentifier(val string) bool {
+	if len(val) == 0 {
+		return false
+	}
+
+	// must begin with lower alpha.
+	if !isLower(rune(val[0])) {
+		return false
+	}
+
+	// can only end in alnum.
+	if !isAlnum(rune(val[len(val)-1])) {
+		return false
+	}
+
+	for i := 0; i < len(val); i++ {
+		ch := rune(val[i])
+		switch {
+		case isAlnum(ch):
+			// ok
+		case ch == ';', ch == '-':
+			// ok
+		default:
+			return false
+		}
+	}
+
+	return true
+}
+
+/*
 compare slice members of two (2) []int instances.
 */
 func intSliceEqual(s1, s2 []int) (equal bool) {

@@ -11,7 +11,7 @@ func ExampleNewNumberForm() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("%s\n", arc)
+	fmt.Printf("%s", arc)
 	// Output: 987895962269883002155146617097157934
 }
 
