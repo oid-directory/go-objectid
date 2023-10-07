@@ -60,31 +60,73 @@ func TestMisc_codecov(t *testing.T) {
 	_ = errorf(errorf("this is an error"))
 }
 
-func TestSlices(t *testing.T) {
-	intSlices := [][]int{
-		{1, 2, 3, 4},
-		{1, 2, 3, 4},
+func TestIntSlices(t *testing.T) {
+	for idx, pair := range [][][]int{
+		{
+			{1, 2, 3, 4},
+			{1, 2, 3, 4},
+		},
+		{
+			{1, 2, 3},
+			{4, 5, 6, 7},
+		},
+		{
+			{8, 8},
+			{8, 8},
+		},
+		{
+			{1, 2, 3, 5},
+			{1, 5, 3, 7},
+		},
+	} {
+		eql := intSliceEqual(pair[0], pair[1])
+		if !eql && idx%2 == 0 {
+			t.Errorf("%s failed: matching int slices not deemed equal", t.Name())
+			return
+		} else if eql && idx%2 != 0 {
+			t.Errorf("%s failed: non-matching int slices deemed equal", t.Name())
+			return
+		}
 	}
+}
 
-	strSlices := [][]string{
-		{`1`, `2`, `3`, `4`},
-		{`1`, `3`, `2`, `4`},
+func TestStrSlices(t *testing.T) {
+	for idx, pair := range [][][]string{
+		{
+			{`1`, `2`, `3`, `4`},
+			{`1`, `2`, `3`, `4`},
+		},
+		{
+			{`1`, `2`, `3`},
+			{`4`, `5`, `6`, `7`},
+		},
+		{
+			{`8`, `8`},
+			{`8`, `8`},
+		},
+		{
+			{`1`, `2`, `3`, `5`},
+			{`1`, `5`, `3`, `7`},
+		},
+	} {
+		eql := strSliceEqual(pair[0], pair[1])
+		if !eql && idx%2 == 0 {
+			t.Errorf("%s failed: matching str slices not deemed equal", t.Name())
+			return
+		} else if eql && idx%2 != 0 {
+			t.Errorf("%s failed: non-matching str slices deemed equal", t.Name())
+			return
+		}
 	}
+}
 
-	if !intSliceEqual(intSlices[0], intSlices[1]) {
-		t.Errorf("%s failed: matching int slices not deemed equal", t.Name())
-		return
-	}
+/*
+func TestStrSlices(t *testing.T) {
 
-	if intSliceEqual([]int{1, 2, 3}, []int{4, 5, 6, 7}) {
-		t.Errorf("%s failed: non-matching int slices deemed equal", t.Name())
-		return
-	}
-
-	if strSliceEqual(strSlices[0], strSlices[1]) {
-		t.Errorf("%s failed: non-matching int slices deemed equal", t.Name())
-		return
-	}
+        strSlices := [][]string{
+                {`1`, `2`, `3`, `4`},
+                {`1`, `3`, `2`, `4`},
+        }
 
 	if strSliceEqual([]string{`1`, `2`, `3`}, []string{`4`, `5`, `6`, `7`}) {
 		t.Errorf("%s failed: non-matching int slices deemed equal", t.Name())
@@ -92,6 +134,7 @@ func TestSlices(t *testing.T) {
 	}
 
 }
+*/
 
 func TestIsNumber(t *testing.T) {
 	for idx, candidate := range []string{

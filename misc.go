@@ -153,10 +153,9 @@ func intSliceEqual(s1, s2 []int) (equal bool) {
 	}
 
 	for i := 0; i < len(s1); i++ {
-		if equal = s1[i] == s2[i]; equal {
-			continue
+		if equal = s1[i] == s2[i]; !equal {
+			break
 		}
-		break
 	}
 
 	return
@@ -171,10 +170,9 @@ func strSliceEqual(s1, s2 []string) (equal bool) {
 	}
 
 	for i := 0; i < len(s1); i++ {
-		if equal = s1[i] == s2[i]; equal {
-			continue
+		if equal = s1[i] == s2[i]; !equal {
+			break
 		}
-		break
 	}
 
 	return
