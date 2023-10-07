@@ -27,10 +27,17 @@ func TestNewNumberForm(t *testing.T) {
 
 func TestBogusNewNumberForm(t *testing.T) {
 	bogus := `-48675`
-	if _, err := NewNumberForm(bogus); err == nil {
+	crap, err := NewNumberForm(bogus)
+	if err == nil {
 		t.Errorf("%s failed: bogus NumberForm '%v' accepted without error",
 			t.Name(), bogus)
+		return
 	}
+
+	var junk NumberForm
+
+	_ = crap.String()
+	_ = junk.String()
 }
 
 func TestNumberForm_Gt(t *testing.T) {
@@ -99,8 +106,8 @@ func ExampleNumberForm_String() {
 
 func ExampleNumberForm_Gt() {
 	nf, _ := NewNumberForm(4658)
-	oth := 4501
-	fmt.Printf("%s > %d: %t", nf, oth, nf.Gt(oth))
+	oth, _ := NewNumberForm(4501)
+	fmt.Printf("%s > %s: %t", nf, oth, nf.Gt(oth))
 	// Output: 4658 > 4501: true
 }
 
@@ -111,10 +118,17 @@ func ExampleNumberForm_Gt_byString() {
 	// Output: 4658 > 4501: true
 }
 
+func ExampleNumberForm_Gt_byUint64() {
+	nf, _ := NewNumberForm(uint64(4658))
+	oth := uint64(4501)
+	fmt.Printf("%s > %d: %t", nf, oth, nf.Gt(oth))
+	// Output: 4658 > 4501: true
+}
+
 func ExampleNumberForm_Lt() {
 	nf, _ := NewNumberForm(4658)
-	oth := 4501
-	fmt.Printf("%s < %d: %t", nf, oth, nf.Lt(oth))
+	oth, _ := NewNumberForm(4501)
+	fmt.Printf("%s < %s: %t", nf, oth, nf.Lt(oth))
 	// Output: 4658 < 4501: false
 }
 
@@ -122,5 +136,12 @@ func ExampleNumberForm_Lt_byString() {
 	nf, _ := NewNumberForm(`4658`)
 	oth := `4501`
 	fmt.Printf("%s < %s: %t", nf, oth, nf.Lt(oth))
+	// Output: 4658 < 4501: false
+}
+
+func ExampleNumberForm_Lt_byUint64() {
+	nf, _ := NewNumberForm(uint64(4658))
+	oth := uint64(4501)
+	fmt.Printf("%s < %d: %t", nf, oth, nf.Lt(oth))
 	// Output: 4658 < 4501: false
 }
