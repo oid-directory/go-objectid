@@ -58,7 +58,9 @@ func TestStrInSlice(t *testing.T) {
 func TestMisc_codecov(t *testing.T) {
 	_ = errorf("this is a string %s", `error`)
 	_ = errorf(errorf("this is an error"))
+}
 
+func TestSlices(t *testing.T) {
 	intSlices := [][]int{
 		{1, 2, 3, 4},
 		{1, 2, 3, 4},
@@ -74,11 +76,24 @@ func TestMisc_codecov(t *testing.T) {
 		return
 	}
 
+	if intSliceEqual([]int{1, 2, 3}, []int{4, 5, 6, 7}) {
+		t.Errorf("%s failed: non-matching int slices deemed equal", t.Name())
+		return
+	}
+
 	if strSliceEqual(strSlices[0], strSlices[1]) {
 		t.Errorf("%s failed: non-matching int slices deemed equal", t.Name())
 		return
 	}
 
+	if strSliceEqual([]string{`1`, `2`, `3`}, []string{`4`, `5`, `6`, `7`}) {
+		t.Errorf("%s failed: non-matching int slices deemed equal", t.Name())
+		return
+	}
+
+}
+
+func TestIsNumber(t *testing.T) {
 	for idx, candidate := range []string{
 		`1`,
 		`t18`,
@@ -98,6 +113,35 @@ func TestMisc_codecov(t *testing.T) {
 			err = errorf("%s failed: good value [%s] not cleared as number", t.Name(), candidate)
 		} else if !is && idx%2 == 0 {
 			err = errorf("%s failed: bogus value [%s] cleared as number", t.Name(), candidate)
+		}
+
+		if err != nil {
+			t.Errorf("%v", err)
+			return
+		}
+	}
+}
+
+func TestIsIdentifier(t *testing.T) {
+	for idx, candidate := range []string{
+		`enterprise`,
+		`Enterprise`,
+		`iso`,
+		`ISO`,
+		`telcoCompany`,
+		`-enterprise`,
+		`identified-organization`,
+		`100`,
+		`joint-iso-itu-t`,
+		``,
+		`itu-t`,
+	} {
+		var err error
+		is := isIdentifier(candidate)
+		if is && idx%2 != 0 {
+			err = errorf("%s failed: good value [%s] not cleared as an identifier", t.Name(), candidate)
+		} else if !is && idx%2 == 0 {
+			err = errorf("%s failed: bogus value [%s] cleared as an identifier", t.Name(), candidate)
 		}
 
 		if err != nil {

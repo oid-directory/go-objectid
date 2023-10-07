@@ -32,15 +32,15 @@ var (
 	isUpper    func(rune) bool                    = unicode.IsUpper
 )
 
-func errorf(msg any, x ...any) error {
+func errorf(msg any, x ...any) (err error) {
 	switch tv := msg.(type) {
 	case string:
-		return errors.New(sprintf(tv, x...))
+		err = errors.New(sprintf(tv, x...))
 	case error:
-		return errors.New(sprintf(tv.Error(), x...))
+		err = errors.New(sprintf(tv.Error(), x...))
 	}
 
-	return nil
+	return
 }
 
 /*
