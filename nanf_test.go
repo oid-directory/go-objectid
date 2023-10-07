@@ -80,10 +80,32 @@ func ExampleNameAndNumberForm_Equal() {
 }
 
 func TestNewNameAndNumberForm(t *testing.T) {
-	if _, err := NewNameAndNumberForm("enterprise(1)"); err != nil {
-		t.Errorf("%s failed: %s",
-			t.Name(), err.Error())
+	var err error
+	var nf NumberForm
+	if nf, err = NewNumberForm(177); err != nil {
+		t.Errorf("%s failed: %s", t.Name(), err.Error())
+		return
 	}
+
+	for idx, v := range []any{
+		`enterprise(1)`,
+		`enterprise1)`,
+		77,
+		``,
+		nf,
+		`blarg`,
+	} {
+		_, err = NewNameAndNumberForm(v)
+		if idx%2 == 0 && err != nil {
+			t.Errorf("%s failed: %v", t.Name(), err)
+			return
+		} else if err == nil && idx%2 != 0 {
+			t.Errorf("%s failed: parsed bogus value without error", t.Name())
+			return
+		}
+	}
+
+	_, _ = NewNameAndNumberForm(nil)
 }
 
 func TestBogusNameAndNumberForm(t *testing.T) {

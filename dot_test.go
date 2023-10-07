@@ -118,7 +118,8 @@ func TestDotNotation_AncestorOf(t *testing.T) {
 }
 
 func TestDotNotation_codecov(t *testing.T) {
-	var dot DotNotation
-	_, _ = dot.IntSlice()
-	_ = dot.String()
+	if _, err := NewDotNotation(``); err == nil {
+		t.Errorf("%s failed: zero length OID parsed without error", t.Name())
+		return
+	}
 }

@@ -9,12 +9,16 @@ type DotNotation []NumberForm
 String is a stringer method that returns the dotNotation
 form of the receiver (e.g.: "1.3.6.1").
 */
-func (d DotNotation) String() string {
-	var x []string
-	for i := 0; i < len(d); i++ {
-		x = append(x, d[i].String())
+func (d DotNotation) String() (s string) {
+	if !d.IsZero() {
+		var x []string
+		for i := 0; i < len(d); i++ {
+			x = append(x, d[i].String())
+		}
+
+		s = join(x, `.`)
 	}
-	return join(x, `.`)
+	return
 }
 
 /*
