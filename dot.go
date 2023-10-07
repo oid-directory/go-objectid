@@ -119,15 +119,10 @@ value indicative of success. This method supports the use of negative
 indices.
 */
 func (d DotNotation) Index(idx int) (a NumberForm, ok bool) {
-	L := len(d)
-
-	// Bail if receiver is empty.
-	if L > 0 {
+	if L := len(d); L > 0 {
 		if idx < 0 {
-			var x int = L + idx
-			if x < 0 {
-				a = d[0]
-			} else {
+			a = d[0]
+			if x := L + idx; x >= 0 {
 				a = d[x]
 			}
 		} else if idx > L {
