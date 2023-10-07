@@ -26,10 +26,12 @@ type NumberForm struct {
 	parsed bool
 }
 
-// isZero returns true if a == 0.
-func (a NumberForm) IsZero() (is bool) {
-	is = true
-	if &a != nil {
+/*
+IsZero returns a Boolean value indicative of whether the
+receiver instance is nil, or unset.
+*/
+func (a *NumberForm) IsZero() (is bool) {
+	if is = a == nil; !is {
 		// NOTE: we do not compare against Zero, because that
 		// is a global variable that could be modified.
 		is = (a.lo == uint64(0) && a.hi == uint64(0))
@@ -146,27 +148,28 @@ func (a NumberForm) len() int {
 	return 128 - a.leadingZeros()
 }
 
-// String returns the base-10 representation of a as a string.
+/*
+String returns the base-10 string representation of the receiver
+instance.
+*/
 func (a NumberForm) String() string {
-	if a.IsZero() {
-		return "0"
-	} else if !a.parsed {
-		return "0"
+	if !a.IsZero() {
+		buf := []byte("0000000000000000000000000000000000000000") // log10(2^128) < 40
+		for i := len(buf); ; i -= 19 {
+			q, r := a.quoRem64(1e19) // largest power of 10 that fits in a uint64
+			var n int
+			for ; r != 0; r /= 10 {
+				n++
+				buf[i-n] += byte(r % 10)
+			}
+			if q.IsZero() {
+				return string(buf[i-n:])
+			}
+			a = q
+		}
 	}
 
-	buf := []byte("0000000000000000000000000000000000000000") // log10(2^128) < 40
-	for i := len(buf); ; i -= 19 {
-		q, r := a.quoRem64(1e19) // largest power of 10 that fits in a uint64
-		var n int
-		for ; r != 0; r /= 10 {
-			n++
-			buf[i-n] += byte(r % 10)
-		}
-		if q.IsZero() {
-			return string(buf[i-n:])
-		}
-		a = q
-	}
+	return "-1"
 }
 
 /*
@@ -179,6 +182,7 @@ func (a *NumberForm) Scan(s fmt.ScanState, ch rune) error {
 }
 
 // quoRem64 returns q = u/v and r = u%v.
+// Credit: Luke Champine
 func (a NumberForm) quoRem64(v uint64) (q NumberForm, r uint64) {
 	if a.hi < v {
 		q.lo, r = bits.Div64(a.hi, a.lo, v)

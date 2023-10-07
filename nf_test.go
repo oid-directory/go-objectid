@@ -23,6 +23,22 @@ func TestNewNumberForm(t *testing.T) {
 		}
 
 		_ = nf.len()
+		_ = nf.String()
+	}
+}
+
+func TestQuorem64(t *testing.T) {
+	x, _ := NewNumberForm(`17238`)
+	for _, y := range []uint64{
+		// don't send zero
+		uint64(13),
+		uint64(17284),
+		uint64(1),
+		uint64(14895623),
+		uint64(1234),
+		uint64(4895623),
+	} {
+		_, _ = x.quoRem64(y)
 	}
 }
 
@@ -103,6 +119,12 @@ func ExampleNumberForm_String() {
 	nf, _ := NewNumberForm(4658)
 	fmt.Printf("%s", nf)
 	// Output: 4658
+}
+
+func ExampleNumberForm_IsZero() {
+	var nf NumberForm
+	fmt.Printf("Zero: %t", nf.IsZero())
+	// Output: Zero: true
 }
 
 func ExampleNumberForm_Gt() {
