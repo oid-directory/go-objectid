@@ -12,7 +12,7 @@ func TestNewNumberForm(t *testing.T) {
 		4874893,
 		``,
 	} {
-		_, err := NewNumberForm(num)
+		nf, err := NewNumberForm(num)
 		ok := err == nil
 		if !ok && idx%2 == 0 {
 			t.Errorf("%s failed: valid number not parsed: %v", t.Name(), err)
@@ -21,8 +21,9 @@ func TestNewNumberForm(t *testing.T) {
 			t.Errorf("%s failed: bogus number parsed without error", t.Name())
 			return
 		}
-	}
 
+		_ = nf.len()
+	}
 }
 
 func TestBogusNewNumberForm(t *testing.T) {
