@@ -43,18 +43,36 @@ func errorf(msg any, x ...any) error {
 	return nil
 }
 
+/*
+strInSlice returns a Boolean value indicative of whether the
+specified string (str) is present within slice. Please note
+that case is a significant element in the matching process.
+*/
 func strInSlice(str string, slice []string) bool {
-	if len(str) == 0 || len(slice) == 0 {
-		return false
-	}
-
-	for _, val := range slice {
-		if eq(val, str) {
+	for i := 0; i < len(slice); i++ {
+		if str == slice[i] {
 			return true
 		}
 	}
-
 	return false
+}
+
+/*
+strInSliceFold returns a Boolean value indicative of whether
+the specified string (str) is present within slice. Case is
+not significant in the matching process.
+*/
+func strInSliceFold(str string, slice []string) bool {
+	for i := 0; i < len(slice); i++ {
+		if eq(str, slice[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+func isPowerOfTwo(x int) bool {
+	return x&(x-1) == 0
 }
 
 /*
