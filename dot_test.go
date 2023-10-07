@@ -111,14 +111,23 @@ func TestDotNotation_IsZero(t *testing.T) {
 
 func TestDotNotation_AncestorOf(t *testing.T) {
 	dot, _ := NewDotNotation(`1.3.6`)
-	child, err := NewDotNotation(`1.3.6.1.4`)
+	chstr := `1.3.6.1.4`
+	child, err := NewDotNotation(chstr)
 	if err != nil {
 		t.Errorf(err.Error())
-	}
-	if !dot.AncestorOf(child) {
-		t.Errorf("%s failed: ancestry check returned bogus result",
-			t.Name())
 		return
+	}
+
+	for _, d := range []any{
+		chstr,
+		child,
+		*child,
+	} {
+		if !dot.AncestorOf(d) {
+			t.Errorf("%s failed: ancestry check returned bogus result",
+				t.Name())
+			return
+		}
 	}
 }
 
