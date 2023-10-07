@@ -110,7 +110,7 @@ func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 	case []string:
 		nfs = tv
 	default:
-		err = errorf("Unsupported %T input type: %#v\n", x, x)
+		err = errorf("Unsupported %T input type: %#v", x, x)
 		return
 	}
 
@@ -146,14 +146,6 @@ func (a ASN1Notation) Valid() (is bool) {
 	// Don't waste time on
 	// zero instances.
 	if L := a.Len(); L > 0 {
-		// bail out if any of the slice
-		// values are unparsed.
-		for i := 0; i < L; i++ {
-			if !a[i].parsed {
-				return false
-			}
-		}
-
 		if root, ok := a.Index(0); ok {
 			// root cannot be greater than 2
 			is = root.NumberForm().Lt(3)
@@ -207,49 +199,42 @@ func (a ASN1Notation) NewSubordinate(nanf any) *ASN1Notation {
 AncestorOf returns a boolean value indicative of whether the receiver
 is an ancestor of the input value, which can be string or ASN1Notation.
 */
-func (a ASN1Notation) AncestorOf(asn any) bool {
-	if a.IsZero() {
-		return false
+func (a ASN1Notation) AncestorOf(asn any) (anc bool) {
+	if !a.IsZero() {
+		var A *ASN1Notation
+
+		switch tv := asn.(type) {
+		case string:
+			A, _ = NewASN1Notation(tv)
+		case *ASN1Notation:
+			if tv != nil {
+				A = tv
+			}
+		case ASN1Notation:
+			if tv.Len() >= 0 {
+				A = &tv
+			}
+		}
+
+		if A.Len() > a.Len() {
+			anc = a.matchASN1(A)
+		}
 	}
 
-	var A *ASN1Notation
-
-	switch tv := asn.(type) {
-	case string:
-		var err error
-		if A, err = NewASN1Notation(tv); err != nil {
-			return false
-		}
-	case *ASN1Notation:
-		if tv != nil {
-			A = tv
-		}
-	case ASN1Notation:
-		if tv.Len() >= 0 {
-			A = &tv
-		}
-	default:
-		return false
-	}
-
-	if A.Len() < a.Len() {
-		return false
-	}
-
-	return a.matchASN1(A)
+	return
 }
 
-func (a ASN1Notation) matchASN1(asn *ASN1Notation) bool {
-	for i := 0; i < a.Len(); i++ {
+func (a ASN1Notation) matchASN1(asn *ASN1Notation) (matched bool) {
+	L := a.Len()
+	ct := 0
+	for i := 0; i < L; i++ {
 		x, _ := a.Index(i)
-		y, ok := asn.Index(i)
-		if !ok {
-			return false
-		}
-		if !x.Equal(y) {
-			return false
+		if y, ok := asn.Index(i); ok {
+			if x.Equal(y) {
+				ct++
+			}
 		}
 	}
 
-	return true
+	return ct == L
 }

@@ -25,6 +25,10 @@ func TestNewNumberForm(t *testing.T) {
 		_ = nf.len()
 		_ = nf.String()
 	}
+
+	var nf NumberForm
+	_ = nf.gtLt(nil, true)  // codecov
+	_ = nf.gtLt(nil, false) // codecov
 }
 
 func TestQuorem64(t *testing.T) {
