@@ -92,30 +92,26 @@ func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
 
 	// select the numerical characters,
 	// or bail out ...
-	n := x[idx+1 : len(x)-1]
-	if !isNumber(n) {
-		err = errorf("Bad primaryIdentifier '%s'", n)
-		return
-	}
-
-	// Parse/verify what appears to be the
-	// identifier string value.
-	var identifier string = x[:idx]
-	if !isIdentifier(identifier) {
+	err = errorf("Bad numberForm: value must fall within 0 and ^uint128")
+	if n := x[idx+1 : len(x)-1]; isNumber(n) {
+		// Parse/verify what appears to be the
+		// identifier string value.
+		var identifier string = x[:idx]
 		err = errorf("Invalid identifier [%s]; syntax must conform to: LOWER *[ [-] +[ UPPER / LOWER / DIGIT ] ]", identifier)
-		return
+		if isIdentifier(identifier) {
+			// parse the string numberForm value into
+			// an instance of NumberForm, or bail out.
+			var prid NumberForm
+			if prid, err = NewNumberForm(n); err == nil {
+				// Prepare to return valid information.
+				nanf = new(NameAndNumberForm)
+				nanf.parsed = true
+				nanf.primaryIdentifier = prid
+				nanf.identifier = x[:idx]
+			}
+		}
 	}
 
-	// parse the string numberForm value into
-	// an instance of NumberForm, or bail out.
-	var prid NumberForm
-	if prid, err = NewNumberForm(n); err == nil {
-		// Prepare to return valid information.
-		nanf = new(NameAndNumberForm)
-		nanf.parsed = true
-		nanf.primaryIdentifier = prid
-		nanf.identifier = x[:idx]
-	}
 	return
 }
 
