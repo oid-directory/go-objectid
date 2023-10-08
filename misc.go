@@ -32,29 +32,47 @@ var (
 	isUpper    func(rune) bool                    = unicode.IsUpper
 )
 
-func errorf(msg any, x ...any) error {
+func errorf(msg any, x ...any) (err error) {
 	switch tv := msg.(type) {
 	case string:
-		return errors.New(sprintf(tv, x...))
+		err = errors.New(sprintf(tv, x...))
 	case error:
-		return errors.New(sprintf(tv.Error(), x...))
+		err = errors.New(sprintf(tv.Error(), x...))
 	}
 
-	return nil
+	return
 }
 
+/*
+strInSlice returns a Boolean value indicative of whether the
+specified string (str) is present within slice. Please note
+that case is a significant element in the matching process.
+*/
 func strInSlice(str string, slice []string) bool {
-	if len(str) == 0 || len(slice) == 0 {
-		return false
-	}
-
-	for _, val := range slice {
-		if eq(val, str) {
+	for i := 0; i < len(slice); i++ {
+		if str == slice[i] {
 			return true
 		}
 	}
-
 	return false
+}
+
+/*
+strInSliceFold returns a Boolean value indicative of whether
+the specified string (str) is present within slice. Case is
+not significant in the matching process.
+*/
+func strInSliceFold(str string, slice []string) bool {
+	for i := 0; i < len(slice); i++ {
+		if eq(str, slice[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+func isPowerOfTwo(x int) bool {
+	return x&(x-1) == 0
 }
 
 /*
@@ -74,6 +92,59 @@ func isNumber(val string) bool {
 }
 
 /*
+isAlnum returns a Boolean value indicative of whether rune r represents
+an alphanumeric character. Specifically, one (1) of the following ranges
+must evaluate as true:
+
+  - 0-9 (ASCII characters 48 through 57)
+  - A-Z (ASCII characters 65 through 90)
+  - a-z (ASCII characters 97 through 122)
+*/
+func isAlnum(r rune) bool {
+	return isLower(r) || isUpper(r) || isDigit(r)
+}
+
+/*
+isIdentifier scans the input string val and judges whether
+it appears to qualify as an identifier, in that:
+
+- it begins with a lower alpha
+- it contains only alphanumeric characters, hyphens or semicolons
+
+This is used, specifically, it identify an LDAP attributeType (with
+or without a tag), or an LDAP matchingRule.
+*/
+func isIdentifier(val string) bool {
+	if len(val) == 0 {
+		return false
+	}
+
+	// must begin with lower alpha.
+	if !isLower(rune(val[0])) {
+		return false
+	}
+
+	// can only end in alnum.
+	if !isAlnum(rune(val[len(val)-1])) {
+		return false
+	}
+
+	for i := 0; i < len(val); i++ {
+		ch := rune(val[i])
+		switch {
+		case isAlnum(ch):
+			// ok
+		case ch == ';', ch == '-':
+			// ok
+		default:
+			return false
+		}
+	}
+
+	return true
+}
+
+/*
 compare slice members of two (2) []int instances.
 */
 func intSliceEqual(s1, s2 []int) (equal bool) {
@@ -82,12 +153,11 @@ func intSliceEqual(s1, s2 []int) (equal bool) {
 	}
 
 	for i := 0; i < len(s1); i++ {
-		if s1[i] != s2[i] {
-			return
+		if equal = s1[i] == s2[i]; !equal {
+			break
 		}
 	}
 
-	equal = true
 	return
 }
 
@@ -100,12 +170,11 @@ func strSliceEqual(s1, s2 []string) (equal bool) {
 	}
 
 	for i := 0; i < len(s1); i++ {
-		if s1[i] != s2[i] {
-			return
+		if equal = s1[i] == s2[i]; !equal {
+			break
 		}
 	}
 
-	equal = true
 	return
 }
 
@@ -142,16 +211,15 @@ func condenseWHSP(b string) (a string) {
 sscan is a closure function used by the NumberForm stringer
 for interoperability with fmt.Sscan.
 */
-func sscan(s fmt.ScanState, ch rune, u *NumberForm) error {
+func sscan(s fmt.ScanState, ch rune, u *NumberForm) (err error) {
 	i := new(big.Int)
-	if err := i.Scan(s, ch); err != nil {
-		return err
-	} else if i.Sign() < 0 {
-		return errorf("value cannot be negative")
-	} else if i.BitLen() > 128 {
-		return errorf("value overflows uint128")
+	if err = i.Scan(s, ch); err == nil {
+		err = errorf("Value cannot be negative, nor can it have a bit length >128")
+		if 0 <= i.Sign() && i.BitLen() < 128 {
+			u.lo = i.Uint64()
+			u.hi = i.Rsh(i, 64).Uint64()
+			err = nil
+		}
 	}
-	u.lo = i.Uint64()
-	u.hi = i.Rsh(i, 64).Uint64()
-	return nil
+	return
 }

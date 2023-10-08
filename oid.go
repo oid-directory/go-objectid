@@ -12,12 +12,10 @@ type OID struct {
 /*
 IsZero checks the receiver for nilness and returns a boolean indicative of the result.
 */
-func (id OID) IsZero() (is bool) {
-	if &id == nil {
-		return false
+func (id *OID) IsZero() (is bool) {
+	if id != nil {
+		is = len(id.nanf) == 0
 	}
-
-	is = len(id.nanf) == 0 && id.parsed
 	return
 }
 
@@ -25,56 +23,55 @@ func (id OID) IsZero() (is bool) {
 Dot returns a DotNotation instance based on the contents of the underlying ASN1Notation
 instance found within the receiver.
 */
-func (id OID) Dot() DotNotation {
-	if (&id).IsZero() {
-		return DotNotation{}
+func (id OID) Dot() (d DotNotation) {
+	if !id.IsZero() {
+		d = make(DotNotation, len(id.nanf))
+		for i := 0; i < len(id.nanf); i++ {
+			d[i] = id.nanf[i].NumberForm()
+		}
 	}
 
-	d := make(DotNotation, len(id.nanf))
-	for i := 0; i < len(id.nanf); i++ {
-		d[i] = id.nanf[i].NumberForm()
-	}
-	return d
+	return
 }
 
 /*
 ASN returns the underlying ASN1Notation instance found within the receiver.
 */
-func (id OID) ASN() ASN1Notation {
-	if (&id).IsZero() {
-		return ASN1Notation{}
+func (id OID) ASN() (a ASN1Notation) {
+	if !id.IsZero() {
+		a = id.nanf
 	}
-	return id.nanf
+	return
 }
 
 /*
 Valid returns a boolean value indicative of whether the receiver's state is considered value.
 */
-func (id OID) Valid() bool {
-	if id.IsZero() {
-		return false
-	}
-	nanf, ok := id.nanf.Index(0)
-	if !ok {
-		return false
-	}
-	for i := 0; i < 3; i++ {
-		if nanf.NumberForm().Equal(i) {
-			return true
+func (id OID) Valid() (ok bool) {
+	if !id.IsZero() {
+		var nanf NameAndNumberForm
+		if nanf, ok = id.nanf.Index(0); ok {
+			var found bool
+			for i := 0; i < 3; i++ {
+				if nanf.NumberForm().Equal(i) {
+					found = true
+					break
+				}
+			}
+			ok = found
 		}
 	}
-	return false
+	return
 }
 
 /*
 Len returns the integer length of all underlying NumberForm values present within the receiver.
 */
 func (id OID) Len() (i int) {
-	if id.IsZero() {
-		return
+	if !id.IsZero() {
+		i = len(id.nanf)
 	}
 
-	i = len(id.nanf)
 	return
 }
 
@@ -82,10 +79,9 @@ func (id OID) Len() (i int) {
 Leaf returns the leaf-node instance of NameAndNumberForm.
 */
 func (id OID) Leaf() (nanf NameAndNumberForm) {
-	if id.IsZero() {
-		return
+	if !id.IsZero() {
+		nanf, _ = id.nanf.Index(-1)
 	}
-	nanf, _ = id.nanf.Index(-1)
 	return
 }
 
@@ -93,10 +89,9 @@ func (id OID) Leaf() (nanf NameAndNumberForm) {
 Parent returns the leaf-node's Parent instance of NameAndNumberForm.
 */
 func (id OID) Parent() (nanf NameAndNumberForm) {
-	if id.IsZero() {
-		return
+	if !id.IsZero() {
+		nanf, _ = id.nanf.Index(-2)
 	}
-	nanf, _ = id.nanf.Index(-2)
 	return
 }
 
@@ -104,10 +99,9 @@ func (id OID) Parent() (nanf NameAndNumberForm) {
 Root returns the root node instance of NameAndNumberForm.
 */
 func (id OID) Root() (nanf NameAndNumberForm) {
-	if id.IsZero() {
-		return
+	if !id.IsZero() {
+		nanf, _ = id.nanf.Index(0)
 	}
-	nanf, _ = id.nanf.Index(0)
 	return
 }
 
@@ -127,37 +121,33 @@ Not all NameAndNumberForm values (arcs) require actual names; they can be number
 func NewOID(x any) (o *OID, err error) {
 	t := new(OID)
 
+	var nfs []string
 	switch tv := x.(type) {
 	case string:
-		f := fields(condenseWHSP(trimR(trimL(tv, `{`), `}`)))
-		for i := 0; i < len(f); i++ {
-			var nanf *NameAndNumberForm
-			if nanf, err = NewNameAndNumberForm(f[i]); err != nil {
-				return
-			}
-			t.nanf = append(t.nanf, *nanf)
-		}
+		nfs = fields(condenseWHSP(trimR(trimL(tv, `{`), `}`)))
 	case []string:
-		for i := 0; i < len(tv); i++ {
-			var nanf *NameAndNumberForm
-			if nanf, err = NewNameAndNumberForm(tv[i]); err != nil {
-				return
-			}
-			t.nanf = append(t.nanf, *nanf)
-		}
+		nfs = tv
 	default:
 		err = errorf("Unsupported %T input type: %#v\n", x, x)
 		return
 	}
 
-	if !t.Valid() {
-		err = errorf("%T instance did not pass validity checks: %#v", t, *t)
-		return
+	for i := 0; i < len(nfs) && err == nil; i++ {
+		var nanf *NameAndNumberForm
+		if nanf, err = NewNameAndNumberForm(nfs[i]); nanf != nil {
+			t.nanf = append(t.nanf, *nanf)
+		}
 	}
 
-	o = new(OID)
-	o.parsed = true
-	*o = *t
+	if err == nil {
+		err = errorf("%T instance did not pass validity checks: %#v", t, *t)
+		if t.Valid() {
+			o = new(OID)
+			o.parsed = true
+			*o = *t
+			err = nil
+		}
+	}
 
 	return
 }

@@ -26,15 +26,17 @@ type NumberForm struct {
 	parsed bool
 }
 
-// isZero returns true if a == 0.
-func (a NumberForm) IsZero() bool {
-	if &a == nil {
-		return true
+/*
+IsZero returns a Boolean value indicative of whether the
+receiver instance is nil, or unset.
+*/
+func (a *NumberForm) IsZero() (is bool) {
+	if is = a == nil; !is {
+		// NOTE: we do not compare against Zero, because that
+		// is a global variable that could be modified.
+		is = (a.lo == uint64(0) && a.hi == uint64(0))
 	}
-
-	// NOTE: we do not compare against Zero, because that
-	// is a global variable that could be modified.
-	return a.lo == uint64(0) && a.hi == uint64(0)
+	return
 }
 
 /*
@@ -43,23 +45,23 @@ the value provided. Valid input types are string, uint64, int and NumberForm.
 
 Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Equal(n any) bool {
+func (a NumberForm) Equal(n any) (is bool) {
 	switch tv := n.(type) {
 	case NumberForm:
-		return a == tv
+		is = a == tv
 	case string:
 		if nf, err := NewNumberForm(tv); err == nil {
-			return a == nf
+			is = a == nf
 		}
 	case uint64:
-		return a.lo == tv && a.hi == 0
+		is = a.lo == tv && a.hi == 0
 	case int:
 		if 0 <= tv {
-			return a.lo == uint64(tv) && a.hi == 0
+			is = a.lo == uint64(tv) && a.hi == 0
 		}
 	}
 
-	return false
+	return
 }
 
 /*
@@ -68,18 +70,30 @@ the value provided. Valid input types are string, uint64, int and NumberForm.
 
 Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Gt(n any) bool {
+func (a NumberForm) Gt(n any) (is bool) {
 	switch tv := n.(type) {
 	case NumberForm, string:
-		return a.gtLt(tv, false)
+		is = a.gtLt(tv, false)
 	case uint64:
-		return a.lo > tv && a.hi == uint64(0)
+		is = a.lo > tv && a.hi == uint64(0)
 	case int:
 		if 0 <= tv {
-			return a.lo > uint64(tv) && a.hi == uint64(0)
+			is = a.lo > uint64(tv) && a.hi == uint64(0)
 		}
 	}
-	return false
+	return
+}
+
+/*
+Ge returns a boolean value indicative of whether the receiver is greater than
+or equal to the value provided. Valid input types are string, uint64, int and
+NumberForm. This method is merely a convenient wrapper to an ORed call of the
+NumberForm.Gt and NumberForm.Equal methods.
+
+Any input that represents a negative number guarantees a false return.
+*/
+func (a NumberForm) Ge(n any) (is bool) {
+	return a.Gt(n) || a.Equal(n)
 }
 
 /*
@@ -88,18 +102,30 @@ the value provided. Valid input types are string, uint64, int and NumberForm.
 
 Any input that represents a negative number guarantees a false return.
 */
-func (a NumberForm) Lt(n any) bool {
+func (a NumberForm) Lt(n any) (is bool) {
 	switch tv := n.(type) {
 	case NumberForm, string:
-		return a.gtLt(tv, true)
+		is = a.gtLt(tv, true)
 	case uint64:
-		return a.lo < tv && a.hi == uint64(0)
+		is = a.lo < tv && a.hi == uint64(0)
 	case int:
 		if 0 <= tv {
-			return a.lo < uint64(tv) && a.hi == uint64(0)
+			is = a.lo < uint64(tv) && a.hi == uint64(0)
 		}
 	}
-	return false
+	return
+}
+
+/*
+Le returns a boolean value indicative of whether the receiver is less than or
+equal to the value provided. Valid input types are string, uint64, int and
+NumberForm. This method is merely a convenient wrapper to an ORed call of the
+NumberForm.Lt and NumberForm.Equal methods.
+
+Any input that represents a negative number guarantees a false return.
+*/
+func (a NumberForm) Le(n any) (is bool) {
+	return a.Lt(n) || a.Equal(n)
 }
 
 func (a NumberForm) gtLt(x any, lt bool) bool {
@@ -146,27 +172,28 @@ func (a NumberForm) len() int {
 	return 128 - a.leadingZeros()
 }
 
-// String returns the base-10 representation of a as a string.
+/*
+String returns the base-10 string representation of the receiver
+instance.
+*/
 func (a NumberForm) String() string {
-	if a.IsZero() {
-		return "0"
-	} else if !a.parsed {
-		return "0"
+	if !a.IsZero() {
+		buf := []byte("0000000000000000000000000000000000000000") // log10(2^128) < 40
+		for i := len(buf); ; i -= 19 {
+			q, r := a.quoRem64(1e19) // largest power of 10 that fits in a uint64
+			var n int
+			for ; r != 0; r /= 10 {
+				n++
+				buf[i-n] += byte(r % 10)
+			}
+			if q.IsZero() {
+				return string(buf[i-n:])
+			}
+			a = q
+		}
 	}
 
-	buf := []byte("0000000000000000000000000000000000000000") // log10(2^128) < 40
-	for i := len(buf); ; i -= 19 {
-		q, r := a.quoRem64(1e19) // largest power of 10 that fits in a uint64
-		var n int
-		for ; r != 0; r /= 10 {
-			n++
-			buf[i-n] += byte(r % 10)
-		}
-		if q.IsZero() {
-			return string(buf[i-n:])
-		}
-		a = q
-	}
+	return "-1"
 }
 
 /*
@@ -179,6 +206,7 @@ func (a *NumberForm) Scan(s fmt.ScanState, ch rune) error {
 }
 
 // quoRem64 returns q = u/v and r = u%v.
+// Credit: Luke Champine
 func (a NumberForm) quoRem64(v uint64) (q NumberForm, r uint64) {
 	if a.hi < v {
 		q.lo, r = bits.Div64(a.hi, a.lo, v)
