@@ -32,17 +32,26 @@ func TestNewNumberForm(t *testing.T) {
 }
 
 func TestQuorem64(t *testing.T) {
-	x, _ := NewNumberForm(`17238`)
-	for _, y := range []uint64{
-		// don't send zero
-		uint64(13),
-		uint64(17284),
-		uint64(1),
-		uint64(14895623),
-		uint64(1234),
-		uint64(4895623),
+	for _, z := range []int{
+		0,
+		1,
+		225,
+		18457,
+		9,
 	} {
-		_, _ = x.quoRem64(y)
+		x, _ := NewNumberForm(z)
+		for _, y := range []uint64{
+			// don't send zero
+			uint64(13),
+			uint64(17284),
+			^uint64(0),
+			uint64(1),
+			uint64(14895623),
+			uint64(1234),
+			uint64(4895623),
+		} {
+			_, _ = x.quoRem64(y)
+		}
 	}
 }
 
