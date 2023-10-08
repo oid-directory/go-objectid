@@ -3,16 +3,23 @@ Package objectid implements ASN.1 Object Identifier types and methods.
 
 # Features
 
-• Unsigned 128-bit numberForm support (i.e.: such as the registrations found below {joint-iso-itu-t(2) uuid(25)})
+  - Unsigned 128-bit numberForm support (allows for expressing registrations found below {joint-iso-itu-t(2) uuid(25)}, per X.670)
+  - Flexible index support, allowing interrogation through negative indices without the risk of panic
+  - Convenient Leaf, Parent and Root index alias methods, wherever applicable
+  - Ge, Gt, Le, Lt, Equal comparison methods for interacting with NumberForm instances
 
-• Flexible index support, allowing interrogation through negative indices without the risk of panic
+# License
 
-• Convenient Leaf, Parent and Root index alias methods, wherever allowed
+The go-objectid package is available under the terms of the MIT license.
 
-# Uint128 Support
+For further details, see the LICENSE file within the root of the source repository.
 
-Unsigned 128-bit integer support for individual NumberForm values is made possible due to the private incorporation of Luke Champine's awesome Uint128 type, which manifests here through instances of the package-provided NumberForm type.
+# NumberForm Maximum
 
-Valid NumberForm instances may fall between the minimum decimal value of zero (0) and the maximum decimal value of 340,282,366,920,938,463,463,374,607,431,768,211,455 (three hundred forty undecillion and change). This ensures no panics occur when parsing valid UUID-based object identifiers.
+Valid NumberForm instances may fall between the minimum decimal value of zero (0) and the maximum decimal value of 340,282,366,920,938,463,463,374,607,431,768,211,455 (three hundred forty undecillion and change). This ensures no panics occur when parsing valid UUID-based object identifiers, such as those found beneath joint-iso-itu-t(2) uuid(25) per X.670.
+
+# Special Credit
+
+A special thanks to Luke Champine for his excellent Uint128 package (found at https://github.com/lukechampine/uint128), which is incorporated within this package for X.670 support within NumberForm instances.
 */
 package objectid
