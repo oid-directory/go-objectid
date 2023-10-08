@@ -85,6 +85,18 @@ func (a NumberForm) Gt(n any) (is bool) {
 }
 
 /*
+Ge returns a boolean value indicative of whether the receiver is greater than
+or equal to the value provided. Valid input types are string, uint64, int and
+NumberForm. This method is merely a convenient wrapper to an ORed call of the
+NumberForm.Gt and NumberForm.Equal methods.
+
+Any input that represents a negative number guarantees a false return.
+*/
+func (a NumberForm) Ge(n any) (is bool) {
+	return a.Gt(n) || a.Equal(n)
+}
+
+/*
 Lt returns a boolean value indicative of whether the receiver is less than
 the value provided. Valid input types are string, uint64, int and NumberForm.
 
@@ -102,6 +114,18 @@ func (a NumberForm) Lt(n any) (is bool) {
 		}
 	}
 	return
+}
+
+/*
+Le returns a boolean value indicative of whether the receiver is less than or
+equal to the value provided. Valid input types are string, uint64, int and
+NumberForm. This method is merely a convenient wrapper to an ORed call of the
+NumberForm.Lt and NumberForm.Equal methods.
+
+Any input that represents a negative number guarantees a false return.
+*/
+func (a NumberForm) Le(n any) (is bool) {
+	return a.Lt(n) || a.Equal(n)
 }
 
 func (a NumberForm) gtLt(x any, lt bool) bool {

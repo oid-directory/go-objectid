@@ -80,8 +80,23 @@ func TestNumberForm_Gt(t *testing.T) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
 
-	if nf, _ = NewNumberForm(uint64(829765)); !nf.Lt(500000000) {
+	if nf, _ = NewNumberForm(uint64(829765)); nf.Gt(500000000) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+}
+
+func TestNumberForm_Ge(t *testing.T) {
+	nf, _ := NewNumberForm(4658)
+	if !nf.Ge(3700) {
+		t.Errorf("%s failed: Ge evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); nf.Ge(500000000) {
+		t.Errorf("%s failed: Ge evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(uint64(829765)); nf.Ge(500000000) {
+		t.Errorf("%s failed: Ge evaluation returned a bogus value", t.Name())
 	}
 }
 
@@ -97,6 +112,21 @@ func TestNumberForm_Lt(t *testing.T) {
 
 	if nf, _ = NewNumberForm(uint64(329856)); !nf.Lt(500000000) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+}
+
+func TestNumberForm_Le(t *testing.T) {
+	nf, _ := NewNumberForm(4658)
+	if nf.Le(3700) {
+		t.Errorf("%s failed: Le evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); !nf.Le(500000000) {
+		t.Errorf("%s failed: Le evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(uint64(329856)); !nf.Le(500000000) {
+		t.Errorf("%s failed: Le evaluation returned a bogus value", t.Name())
 	}
 }
 
@@ -140,6 +170,13 @@ func ExampleNumberForm_IsZero() {
 	// Output: Zero: true
 }
 
+func ExampleNumberForm_Ge() {
+	nf, _ := NewNumberForm(4658)
+	oth, _ := NewNumberForm(4501)
+	fmt.Printf("%s >= %s: %t", nf, oth, nf.Ge(oth))
+	// Output: 4658 >= 4501: true
+}
+
 func ExampleNumberForm_Gt() {
 	nf, _ := NewNumberForm(4658)
 	oth, _ := NewNumberForm(4501)
@@ -166,6 +203,13 @@ func ExampleNumberForm_Lt() {
 	oth, _ := NewNumberForm(4501)
 	fmt.Printf("%s < %s: %t", nf, oth, nf.Lt(oth))
 	// Output: 4658 < 4501: false
+}
+
+func ExampleNumberForm_Le() {
+	nf, _ := NewNumberForm(4658)
+	oth, _ := NewNumberForm(4501)
+	fmt.Printf("%s =< %s: %t", nf, oth, nf.Le(oth))
+	// Output: 4658 =< 4501: false
 }
 
 func ExampleNumberForm_Lt_byString() {
