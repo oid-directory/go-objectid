@@ -1,13 +1,12 @@
 package objectid
 
 /*
-DotNotation contains an ordered sequence of NumberForm instances.
+DotNotation contains an ordered sequence of [NumberForm] instances.
 */
 type DotNotation []NumberForm
 
 /*
-String is a stringer method that returns the dotNotation
-form of the receiver (e.g.: "1.3.6.1").
+String is a stringer method that returns the dot notation form of the receiver (e.g.: "1.3.6.1").
 */
 func (d DotNotation) String() (s string) {
 	if !d.IsZero() {
@@ -22,7 +21,7 @@ func (d DotNotation) String() (s string) {
 }
 
 /*
-Root returns the root node (0) NumberForm instance.
+Root returns the root node (0) [NumberForm] instance.
 */
 func (d DotNotation) Root() NumberForm {
 	x, _ := d.Index(0)
@@ -34,7 +33,7 @@ func (d DotNotation) Len() int {
 }
 
 /*
-Leaf returns the leaf-node (-1) NumberForm instance.
+Leaf returns the leaf-node (-1) [NumberForm] instance.
 */
 func (d DotNotation) Leaf() NumberForm {
 	x, _ := d.Index(-1)
@@ -42,7 +41,7 @@ func (d DotNotation) Leaf() NumberForm {
 }
 
 /*
-Parent returns the leaf-node's parent (-2) NumberForm instance.
+Parent returns the leaf-node's parent (-2) [NumberForm] instance.
 */
 func (d DotNotation) Parent() NumberForm {
 	x, _ := d.Index(-2)
@@ -50,8 +49,7 @@ func (d DotNotation) Parent() NumberForm {
 }
 
 /*
-IsZero returns a boolean indicative of whether the receiver
-is unset.
+IsZero returns a Boolean indicative of whether the receiver is unset.
 */
 func (d *DotNotation) IsZero() (is bool) {
 	if d != nil {
@@ -61,8 +59,7 @@ func (d *DotNotation) IsZero() (is bool) {
 }
 
 /*
-NewDotNotation returns an instance of *DotNotation alongside a boolean
-value indicative of success.
+NewDotNotation returns an instance of *[DotNotation] alongside a Boolean value indicative of success.
 */
 func NewDotNotation(id string) (d *DotNotation, err error) {
 	if len(id) == 0 {
@@ -91,7 +88,7 @@ IntSlice returns slices of integer values and an error. The integer values are b
 upon the contents of the receiver. Note that if any single arc number overflows int,
 a zero slice is returned.
 
-Successful output can be cast as an instance of asn1.ObjectIdentifier, if desired.
+Successful output can be cast as an instance of [encoding/asn1.ObjectIdentifier], if desired.
 */
 func (d DotNotation) IntSlice() (slice []int, err error) {
 	if d.IsZero() {
@@ -114,7 +111,7 @@ func (d DotNotation) IntSlice() (slice []int, err error) {
 }
 
 /*
-Index returns the Nth index from the receiver, alongside a boolean
+Index returns the Nth index from the receiver, alongside a Boolean
 value indicative of success. This method supports the use of negative
 indices.
 */
@@ -137,11 +134,11 @@ func (d DotNotation) Index(idx int) (a NumberForm, ok bool) {
 }
 
 /*
-Ancestry returns slices of DotNotation values ordered from leaf
+Ancestry returns slices of [DotNotation] values ordered from leaf
 node (first) to root node (last).
 
-Empty slices of DotNotation are returned if the dotNotation value
-within the receiver is less than two (2) NumberForm values in length.
+Empty slices of [DotNotation] are returned if the dot notation value
+within the receiver is less than two (2) [NumberForm] values in length.
 */
 func (d DotNotation) Ancestry() (anc []DotNotation) {
 	if d.Len() > 0 {
@@ -154,8 +151,8 @@ func (d DotNotation) Ancestry() (anc []DotNotation) {
 }
 
 /*
-AncestorOf returns a boolean value indicative of whether the receiver
-is an ancestor of the input value, which can be string or DotNotation.
+AncestorOf returns a Boolean value indicative of whether the receiver
+is an ancestor of the input value, which can be string or [DotNotation].
 */
 func (d DotNotation) AncestorOf(dot any) (is bool) {
 	if !d.IsZero() {
@@ -198,9 +195,9 @@ func (d DotNotation) matchDotNot(dot *DotNotation) bool {
 }
 
 /*
-NewSubordinate returns a new instance of DotNotation based upon the
-contents of the receiver as well as the input NumberForm subordinate
-value. This creates a fully-qualified child DotNotation value of the
+NewSubordinate returns a new instance of [DotNotation] based upon the
+contents of the receiver as well as the input [NumberForm] subordinate
+value. This creates a fully-qualified child [DotNotation] value of the
 receiver.
 */
 func (d DotNotation) NewSubordinate(nf any) (dot *DotNotation) {
@@ -221,7 +218,7 @@ func (d DotNotation) NewSubordinate(nf any) (dot *DotNotation) {
 }
 
 /*
-Valid returns a boolean value indicative of the following:
+Valid returns a Boolean value indicative of the following:
 
 • Receiver's length is greater than or equal to one (1) slice member, and ...
 • The first slice in the receiver contains a decimal value that is less than three (3)

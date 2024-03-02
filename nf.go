@@ -17,9 +17,9 @@ var nilNF NumberForm
 
 /*
 NumberForm is an unsigned 128-bit number. This type is based on
-github.com/lukechampine/uint128. It has been incorporated
-into this package to produce unsigned 128-bit OID numberForm
-support (i.e.: UUID-based OIDs).
+github.com/lukechampine/uint128. It has been incorporated into
+this package to produce unsigned 128-bit [OID] numberForm support
+(i.e.: UUID-based [OID]s).
 */
 type NumberForm struct {
 	lo, hi uint64
@@ -41,7 +41,7 @@ func (a *NumberForm) IsZero() (is bool) {
 
 /*
 Equal returns a boolean value indicative of whether the receiver is equal to
-the value provided. Valid input types are string, uint64, int and NumberForm.
+the value provided. Valid input types are string, uint64, int and [NumberForm].
 
 Any input that represents a negative number guarantees a false return.
 */
@@ -66,7 +66,7 @@ func (a NumberForm) Equal(n any) (is bool) {
 
 /*
 Gt returns a boolean value indicative of whether the receiver is greater than
-the value provided. Valid input types are string, uint64, int and NumberForm.
+the value provided. Valid input types are string, uint64, int and [NumberForm].
 
 Any input that represents a negative number guarantees a false return.
 */
@@ -87,8 +87,8 @@ func (a NumberForm) Gt(n any) (is bool) {
 /*
 Ge returns a boolean value indicative of whether the receiver is greater than
 or equal to the value provided. Valid input types are string, uint64, int and
-NumberForm. This method is merely a convenient wrapper to an ORed call of the
-NumberForm.Gt and NumberForm.Equal methods.
+[NumberForm]. This method is merely a convenient wrapper to an ORed call of the
+[NumberForm.Gt] and [NumberForm.Equal] methods.
 
 Any input that represents a negative number guarantees a false return.
 */
@@ -98,7 +98,7 @@ func (a NumberForm) Ge(n any) (is bool) {
 
 /*
 Lt returns a boolean value indicative of whether the receiver is less than
-the value provided. Valid input types are string, uint64, int and NumberForm.
+the value provided. Valid input types are string, uint64, int and [NumberForm].
 
 Any input that represents a negative number guarantees a false return.
 */
@@ -119,8 +119,8 @@ func (a NumberForm) Lt(n any) (is bool) {
 /*
 Le returns a boolean value indicative of whether the receiver is less than or
 equal to the value provided. Valid input types are string, uint64, int and
-NumberForm. This method is merely a convenient wrapper to an ORed call of the
-NumberForm.Lt and NumberForm.Equal methods.
+[NumberForm]. This method is merely a convenient wrapper to an ORed call of the
+[NumberForm.Lt] and [NumberForm.Equal] methods.
 
 Any input that represents a negative number guarantees a false return.
 */
@@ -147,7 +147,7 @@ func (a NumberForm) gtLt(x any, lt bool) bool {
 }
 
 /*
-Valid returns a boolean valud indicative of proper instantiation.
+Valid returns a Boolean value indicative of proper initialization.
 */
 func (a NumberForm) Valid() bool {
 	return a.parsed
@@ -198,7 +198,7 @@ func (a NumberForm) String() string {
 
 /*
 Scan implements fmt.Scanner, and is only present to allow conversion
-of an NumberForm into a string value per fmt.Sscan.  Users need not
+of an [NumberForm] into a string value per [fmt.Sscan].  Users need not
 execute this method directly.
 */
 func (a *NumberForm) Scan(s fmt.ScanState, ch rune) error {
@@ -217,13 +217,13 @@ func (a NumberForm) quoRem64(v uint64) (q NumberForm, r uint64) {
 	return
 }
 
-// NewNumberForm returns the NumberForm value.
+// NewNumberForm returns the [NumberForm] value.
 func newNumberForm(lo, hi uint64) NumberForm {
 	return NumberForm{lo: lo, hi: hi, parsed: true}
 }
 
 /*
-NewNumberForm converts v into an instance of NumberForm, which
+NewNumberForm converts v into an instance of [NumberForm], which
 is returned alongside an error.
 
 Acceptable input types are string, int and uint64. No decimal value,

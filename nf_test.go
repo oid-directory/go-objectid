@@ -6,11 +6,14 @@ import (
 )
 
 func TestNewNumberForm(t *testing.T) {
+	// even #s = valid
+	// odd #s  = invalid
 	for idx, num := range []any{
 		`3849141823758536772162786183725055278`,
 		-103,
-		4874893,
-		``,
+		`9399368356398566872162777255735125541`,
+		`939936835639856687216277725573512554138275978532897358923759872389572389572893758923758923758923759823`, // >uint128
+		`0`,
 	} {
 		nf, err := NewNumberForm(num)
 		ok := err == nil
@@ -24,6 +27,7 @@ func TestNewNumberForm(t *testing.T) {
 
 		_ = nf.len()
 		_ = nf.String()
+		_, _ = nf.quoRem64(uint64(idx+1)) // codecov
 	}
 
 	var nf NumberForm
