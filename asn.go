@@ -1,14 +1,12 @@
 package objectid
 
 /*
-ASN1Notation contains an ordered sequence of NameAndNumberForm
-instances.
+ASN1Notation contains an ordered sequence of [NameAndNumberForm] instances.
 */
 type ASN1Notation []NameAndNumberForm
 
 /*
-String is a stringer method that returns a properly formatted
-ASN.1 string value.
+String is a stringer method that returns a properly formatted ASN.1 string value.
 */
 func (a ASN1Notation) String() string {
 	var x []string
@@ -35,8 +33,7 @@ func (a ASN1Notation) Leaf() NameAndNumberForm {
 }
 
 /*
-Parent returns the leaf node's parent (-2) string value from
-the receiver.
+Parent returns the leaf node's parent (-2) string value from the receiver.
 */
 func (a ASN1Notation) Parent() NameAndNumberForm {
 	x, _ := a.Index(-2)
@@ -49,8 +46,7 @@ Len returns the integer length of the receiver.
 func (a ASN1Notation) Len() int { return len(a) }
 
 /*
-IsZero returns a boolean indicative of whether the receiver
-is unset.
+IsZero returns a Boolean indicative of whether the receiver is unset.
 */
 func (a ASN1Notation) IsZero() (is bool) {
 	if is = &a == nil; !is {
@@ -61,7 +57,7 @@ func (a ASN1Notation) IsZero() (is bool) {
 }
 
 /*
-Index returns the Nth index from the receiver, alongside a boolean
+Index returns the Nth index from the receiver, alongside a Boolean
 value indicative of success. This method supports the use of negative
 indices.
 */
@@ -92,12 +88,12 @@ func (a ASN1Notation) Index(idx int) (nanf NameAndNumberForm, ok bool) {
 }
 
 /*
-NewASN1Notation returns an instance of *ASN1Notation alongside an error.
+NewASN1Notation returns an instance of *[ASN1Notation] alongside an error.
 
 Valid input forms for ASN.1 values are string (e.g.: "{iso(1)}") and string
 slices (e.g.: []string{"iso(1)", "identified-organization(3)" ...}).
 
-NumberForm values CANNOT be negative, and CANNOT overflow NumberForm (uint128).
+[NumberForm] values CANNOT be negative, and CANNOT overflow [NumberForm] (uint128).
 */
 func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 	// prepare temporary instance
@@ -139,7 +135,7 @@ func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 }
 
 /*
-Valid returns a boolean value indicative of whether the receiver's
+Valid returns a Boolean value indicative of whether the receiver's
 length is greater than or equal to one (1) slice member.
 */
 func (a ASN1Notation) Valid() (is bool) {
@@ -156,11 +152,11 @@ func (a ASN1Notation) Valid() (is bool) {
 }
 
 /*
-Ancestry returns slices of DotNotation values ordered from leaf node
+Ancestry returns slices of [DotNotation] values ordered from leaf node
 (first) to root node (last).
 
 Empty slices of DotNotation are returned if the dotNotation value
-within the receiver is less than two (2) NumberForm values in length.
+within the receiver is less than two (2) [NumberForm] values in length.
 */
 func (a ASN1Notation) Ancestry() (anc []ASN1Notation) {
 	if a.Len() >= 2 {
@@ -173,9 +169,9 @@ func (a ASN1Notation) Ancestry() (anc []ASN1Notation) {
 }
 
 /*
-NewSubordinate returns a new instance of ASN1Notation based upon the
-contents of the receiver as well as the input NameAndNumberForm
-subordinate value. This creates a fully-qualified child ASN1Notation
+NewSubordinate returns a new instance of [ASN1Notation] based upon the
+contents of the receiver as well as the input [NameAndNumberForm]
+subordinate value. This creates a fully-qualified child [ASN1Notation]
 value of the receiver.
 */
 func (a ASN1Notation) NewSubordinate(nanf any) *ASN1Notation {
@@ -196,8 +192,8 @@ func (a ASN1Notation) NewSubordinate(nanf any) *ASN1Notation {
 }
 
 /*
-AncestorOf returns a boolean value indicative of whether the receiver
-is an ancestor of the input value, which can be string or ASN1Notation.
+AncestorOf returns a Boolean value indicative of whether the receiver
+is an ancestor of the input value, which can be string or [ASN1Notation].
 */
 func (a ASN1Notation) AncestorOf(asn any) (anc bool) {
 	if !a.IsZero() {

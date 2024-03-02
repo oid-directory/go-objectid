@@ -3,7 +3,7 @@ Package objectid implements ASN.1 Object Identifier types and methods.
 
 # Features
 
-  - Unsigned 128-bit numberForm support (allows for expressing registrations found below {joint-iso-itu-t(2) uuid(25)}, per [X.667](https://www.itu.int/rec/T-REC-X.667))
+  - Unsigned 128-bit numberForm support (allows for expressing registrations found below {joint-iso-itu-t(2) uuid(25)}, per ITU-T Rec. X.667.
   - Flexible index support, allowing interrogation through negative indices without the risk of panic
   - Convenient Leaf, Parent and Root index alias methods, wherever applicable
   - Ge, Gt, Le, Lt, Equal comparison methods for interacting with NumberForm instances
@@ -20,6 +20,6 @@ Valid NumberForm instances may fall between the minimum decimal value of zero (0
 
 # Special Credit
 
-A special thanks to Luke Champine for his excellent Uint128 package (found at https://github.com/lukechampine/uint128), which is incorporated within this package for [X.667](https://www.itu.int/rec/T-REC-X.667) support within NumberForm instances.
+A special thanks to Luke Champine for his excellent Uint128 package (found at https://github.com/lukechampine/uint128), which is incorporated within this package.
 */
 package objectid

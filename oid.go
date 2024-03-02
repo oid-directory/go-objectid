@@ -1,7 +1,7 @@
 package objectid
 
 /*
-OID contains an underlying ASN1Notation value, and extends convenient methods allowing
+OID contains an underlying [ASN1Notation] value, and extends convenient methods allowing
 interrogation and verification.
 */
 type OID struct {
@@ -10,7 +10,7 @@ type OID struct {
 }
 
 /*
-IsZero checks the receiver for nilness and returns a boolean indicative of the result.
+IsZero checks the receiver for nilness and returns a Boolean indicative of the result.
 */
 func (id *OID) IsZero() (is bool) {
 	if id != nil {
@@ -20,7 +20,7 @@ func (id *OID) IsZero() (is bool) {
 }
 
 /*
-Dot returns a DotNotation instance based on the contents of the underlying ASN1Notation
+Dot returns a [DotNotation] instance based on the contents of the underlying [ASN1Notation]
 instance found within the receiver.
 */
 func (id OID) Dot() (d DotNotation) {
@@ -35,7 +35,7 @@ func (id OID) Dot() (d DotNotation) {
 }
 
 /*
-ASN returns the underlying ASN1Notation instance found within the receiver.
+ASN returns the underlying [ASN1Notation] instance found within the receiver.
 */
 func (id OID) ASN() (a ASN1Notation) {
 	if !id.IsZero() {
@@ -45,7 +45,7 @@ func (id OID) ASN() (a ASN1Notation) {
 }
 
 /*
-Valid returns a boolean value indicative of whether the receiver's state is considered value.
+Valid returns a Boolean value indicative of whether the receiver's state is considered value.
 */
 func (id OID) Valid() (ok bool) {
 	if !id.IsZero() {
@@ -65,7 +65,7 @@ func (id OID) Valid() (ok bool) {
 }
 
 /*
-Len returns the integer length of all underlying NumberForm values present within the receiver.
+Len returns the integer length of all underlying [NumberForm] values present within the receiver.
 */
 func (id OID) Len() (i int) {
 	if !id.IsZero() {
@@ -76,7 +76,7 @@ func (id OID) Len() (i int) {
 }
 
 /*
-Leaf returns the leaf-node instance of NameAndNumberForm.
+Leaf returns the leaf-node instance of [NameAndNumberForm].
 */
 func (id OID) Leaf() (nanf NameAndNumberForm) {
 	if !id.IsZero() {
@@ -86,7 +86,7 @@ func (id OID) Leaf() (nanf NameAndNumberForm) {
 }
 
 /*
-Parent returns the leaf-node's Parent instance of NameAndNumberForm.
+Parent returns the leaf-node's Parent instance of [NameAndNumberForm].
 */
 func (id OID) Parent() (nanf NameAndNumberForm) {
 	if !id.IsZero() {
@@ -96,7 +96,7 @@ func (id OID) Parent() (nanf NameAndNumberForm) {
 }
 
 /*
-Root returns the root node instance of NameAndNumberForm.
+Root returns the root node instance of [NameAndNumberForm].
 */
 func (id OID) Root() (nanf NameAndNumberForm) {
 	if !id.IsZero() {
@@ -106,13 +106,13 @@ func (id OID) Root() (nanf NameAndNumberForm) {
 }
 
 /*
-NewOID creates an instance of OID and returns it alongside an error.
+NewOID creates an instance of [OID] and returns it alongside an error.
 
-The correct raw input syntax is the ASN.1 NameAndNumberForm sequence syntax, i.e.:
+The correct raw input syntax is the ASN.1 [NameAndNumberForm] sequence syntax, i.e.:
 
 	{iso(1) identified-organization(3) dod(6)}
 
-Not all NameAndNumberForm values (arcs) require actual names; they can be numbers alone or in the so-called nameAndNumber syntax (name(Number)). For example:
+Not all [NameAndNumberForm] values (arcs) require actual names; they can be numbers alone or in the so-called nameAndNumber syntax (name(Number)). For example:
 
 	{iso(1) identified-organization(3) 6}
 

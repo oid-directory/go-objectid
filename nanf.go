@@ -7,7 +7,7 @@ nanf.go deals with NameAndNumberForm syntax and viability
 /*
 NameAndNumberForm contains either an identifier with a parenthesis-enclosed
 decimal value, or a decimal value alone. An ordered sequence of instances of
-this type comprise an instance of ASN1Notation.
+this type comprise an instance of [ASN1Notation].
 */
 type NameAndNumberForm struct {
 	identifier        string
@@ -16,7 +16,7 @@ type NameAndNumberForm struct {
 }
 
 /*
-IsZero returns a boolean valu indicative of whether
+IsZero returns a Boolean valu indicative of whether
 the receiver is considered nil.
 */
 func (nanf NameAndNumberForm) IsZero() bool {
@@ -32,7 +32,7 @@ func (nanf NameAndNumberForm) Identifier() string {
 }
 
 /*
-NumberForm returns the underlying NumberForm
+NumberForm returns the underlying [NumberForm]
 value assigned to the receiver instance.
 */
 func (nanf NameAndNumberForm) NumberForm() NumberForm {
@@ -41,7 +41,7 @@ func (nanf NameAndNumberForm) NumberForm() NumberForm {
 
 /*
 String is a stringer method that returns the properly
-formatted NameAndNumberForm string value.
+formatted [NameAndNumberForm] string value.
 */
 func (nanf NameAndNumberForm) String() (val string) {
 	n := nanf.primaryIdentifier.String()
@@ -52,8 +52,8 @@ func (nanf NameAndNumberForm) String() (val string) {
 }
 
 /*
-Equal returns a boolean value indicative of whether instance
-n of NameAndNumberForm matches the receiver.
+Equal returns a Boolean value indicative of whether instance
+n of [NameAndNumberForm] matches the receiver.
 */
 func (nanf NameAndNumberForm) Equal(n any) (is bool) {
 	switch tv := n.(type) {
@@ -69,7 +69,7 @@ func (nanf NameAndNumberForm) Equal(n any) (is bool) {
 }
 
 /*
-parseNaNFstr returns an instance of *NameAndNumberForm alongside an error.
+parseNaNFstr returns an instance of *[NameAndNumberForm] alongside an error.
 */
 func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
 	// Don't waste time on bogus values.
@@ -116,15 +116,15 @@ func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
 }
 
 /*
-NewNameAndNumberForm returns an instance of *NameAndNumberForm
+NewNameAndNumberForm returns an instance of *[NameAndNumberForm]
 alongside an error. Valid input forms are:
 
 • nameAndNumberForm (e.g.: "enterprise(1)"), or ...
 
 • numberForm (e.g.: 1)
 
-NumberForm components CANNOT be negative and CANNOT overflow
-NumberForm (uint128). Permitted input types are string, uint64
+[NumberForm] components CANNOT be negative and CANNOT overflow
+[NumberForm] (uint128). Permitted input types are string, uint64
 and (non-negative) int.
 */
 func NewNameAndNumberForm(x any) (nanf *NameAndNumberForm, err error) {
