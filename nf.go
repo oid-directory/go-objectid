@@ -208,7 +208,7 @@ func (a *NumberForm) Scan(s fmt.ScanState, ch rune) error {
 // quoRem64 returns q = u/v and r = u%v.
 // Credit: Luke Champine
 func (a NumberForm) quoRem64(v uint64) (q NumberForm, r uint64) {
-	if a.hi < v {
+	if a.hi <= v {
 		q.lo, r = bits.Div64(a.hi, a.lo, v)
 	} else {
 		q.hi, r = bits.Div64(0, a.hi, v)
