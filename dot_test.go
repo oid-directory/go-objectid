@@ -6,6 +6,24 @@ import (
 	"testing"
 )
 
+/*
+This example demonstrates a means of creating a new instance of [DotNotation]
+using variadic input comprised of mixed (supported) type instances.
+
+This may be useful in cases where an instance of [DotNotation] is being created
+using relative components derived elsewhere, or otherwise inferred incrementally
+in some manner.
+*/
+func ExampleNewDotNotation_mixedVariadicInput() {
+	dot, err := NewDotNotation(uint(1), uint(3), big.NewInt(6), `1`, `4`, `1`, uint64(56521), 999, 5)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("%s", dot)
+	// Output: 1.3.6.1.4.1.56521.999.5
+}
+
 func ExampleDotNotation_Index() {
 	dot, err := NewDotNotation(`1.3.6.1.4.1.56521.999.5`)
 	if err != nil {
@@ -27,13 +45,13 @@ encoded form of the receiver instance of [DotNotation].
 */
 func ExampleDotNotation_Encode() {
 	dot, _ := NewDotNotation(`1.3.6.1.4.1.56521.999.5`)
-	bites, err := dot.Encode()
+	b, err := dot.Encode()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	fmt.Printf("%v", bites)
+	fmt.Printf("%v", b)
 	// Output: [6 11 43 6 1 4 1 131 185 73 135 103 5]
 }
 
@@ -225,6 +243,10 @@ func TestDotNotation_codecov(t *testing.T) {
 	_, err := NewDotNotation(``)
 	if err == nil {
 		t.Errorf("%s failed: zero length OID parsed without error", t.Name())
+		return
+	}
+	if _, err = NewDotNotation(uint(1), uint(3), rune(6)); err == nil {
+		t.Errorf("%s failed: unsupported type accepted by NewDotNotation without error", t.Name())
 		return
 	}
 

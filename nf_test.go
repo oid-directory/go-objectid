@@ -64,6 +64,10 @@ func TestNumberForm_Gt(t *testing.T) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
 
+	if nf, _ = NewNumberForm(`437829765`); !nf.Gt(uint(5000)) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
 	if nf, _ = NewNumberForm(`437829765`); nf.Gt(500000000) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
@@ -95,6 +99,10 @@ func TestNumberForm_Lt(t *testing.T) {
 	}
 
 	if nf, _ = NewNumberForm(`437829765`); nf.Lt(`largus`) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); nf.Lt(uint(44)) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
 
@@ -141,6 +149,10 @@ func TestNumberForm_Equal(t *testing.T) {
 	}
 
 	if nf, _ = NewNumberForm(`437829765`); !nf.Equal(big.NewInt(437829765)) {
+		t.Errorf("%s failed: Eq evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); nf.Equal(uint(748)) {
 		t.Errorf("%s failed: Eq evaluation returned a bogus value", t.Name())
 	}
 

@@ -181,8 +181,7 @@ value of the receiver.
 func (a ASN1Notation) NewSubordinate(nanf any) *ASN1Notation {
 	var A ASN1Notation
 	if a.Len() > 0 {
-		// Prepare the new leaf numberForm,
-		// or die trying.
+		// Prepare the new leaf numberForm, or die trying.
 		if n, err := NewNameAndNumberForm(nanf); err == nil {
 			A = make(ASN1Notation, a.Len()+1, a.Len()+1)
 			for i := 0; i < a.Len(); i++ {

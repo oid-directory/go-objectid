@@ -3,12 +3,12 @@ Package objectid implements ASN.1 Object Identifier types and methods.
 
 # Features
 
-  - Boundless [NumberForm] support
+  - Unbounded [NumberForm] support
   - ASN.1 encoding and decoding of [DotNotation] instances -- without use of the [encoding/asn1] package
   - Flexible index support, allowing interrogation through negative indices without the risk of panic
   - Convenient Leaf, Parent and Root index alias methods, wherever applicable
   - Ge, Gt, Le, Lt, Equal comparison methods for interacting with [NumberForm] instances
-  - Conversion friendly -- seamless [encoding/asn1.ObjectIdentifier] and [crypto/x509.OID] output support
+  - Conversion friendly -- easy hand-off to [encoding/asn1.ObjectIdentifier] and [crypto/x509.OID] instances
 
 # License
 

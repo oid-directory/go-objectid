@@ -8,7 +8,8 @@ DotNotation contains an ordered sequence of [NumberForm] instances.
 type DotNotation []NumberForm
 
 /*
-String is a stringer method that returns the dot notation form of the receiver (e.g.: "1.3.6.1").
+String is a stringer method that returns the dot notation form of the
+receiver (e.g.: "1.3.6.1").
 */
 func (d DotNotation) String() (s string) {
 	if !d.IsZero() {
@@ -61,25 +62,71 @@ func (d *DotNotation) IsZero() (is bool) {
 }
 
 /*
-NewDotNotation returns an instance of *[DotNotation] alongside a Boolean value indicative of success.
+NewDotNotation returns an instance of *[DotNotation] alongside a Boolean
+value indicative of success.
+
+Variadic input allows for slice mixtures of all of the following types,
+each treated as an individual [NumberForm] instance:
+
+  - *[math/big.Int]
+  - string
+  - uint64
+  - uint
+  - int
+
+If a string primitive is the only input option, it will be treated as a
+complete [DotNotation] (e.g.: "1.3.6").
 */
-func NewDotNotation(id string) (d *DotNotation, err error) {
-	if !isNumericOID(id) {
-		err = errorf("invalid numeric OID '%s'", id)
-		return
+func NewDotNotation(x ...any) (d *DotNotation, err error) {
+	var _d DotNotation = make(DotNotation, 0)
+
+	if len(x) == 1 {
+		if slice, ok := x[0].(string); ok {
+			d, err = newDotNotationStr(slice)
+			return
+		}
 	}
 
-	ids := split(id, `.`)
-	var t *DotNotation = new(DotNotation)
-	for i := 0; i < len(ids) && err == nil; i++ {
-		var a NumberForm
-		a, err = NewNumberForm(ids[i])
-		*t = append(*t, a)
+	for i := 0; i < len(x) && err == nil; i++ {
+		var nf NumberForm
+		switch tv := x[i].(type) {
+		case *big.Int, string, uint64, uint, int:
+			nf, err = NewNumberForm(tv)
+		default:
+			err = errorf("Unsupported slice type '%T' for OID", tv)
+		}
+
+		if err == nil {
+			_d = append(_d, nf)
+		}
 	}
 
 	if err == nil {
 		d = new(DotNotation)
-		*d = *t
+		*d = _d
+	}
+
+	return
+}
+
+func newDotNotationStr(dot string) (d *DotNotation, err error) {
+	if !isNumericOID(dot) {
+		err = errorf("Invalid OID '%s' cannot be processed", dot)
+		return
+	}
+	z := split(dot, `.`)
+
+	_d := make(DotNotation, 0)
+	for j := 0; j < len(z) && err == nil; j++ {
+		var nf NumberForm
+		if nf, err = NewNumberForm(z[j]); err == nil {
+			_d = append(_d, nf)
+		}
+	}
+
+	if err == nil {
+		d = new(DotNotation)
+		*d = _d
 	}
 
 	return
@@ -139,8 +186,9 @@ func (d DotNotation) Encode() (b []byte, err error) {
 }
 
 /*
-Decode returns an error following an attempt to parse b, which must be the ASN.1 encoding
-of an OID, into the receiver instance. The receiver instance is reinitialized at runtime.
+Decode returns an error following an attempt to parse b, which must be
+the ASN.1 encoding of an OID, into the receiver instance. The receiver
+instance is reinitialized at runtime.
 */
 func (d *DotNotation) Decode(b []byte) (err error) {
 	if len(b) < 3 {
@@ -243,13 +291,14 @@ func (d DotNotation) IntSlice() (slice []int, err error) {
 }
 
 /*
-Uint64Slice returns slices of uint64 values and an error. The uint64 values are based
-upon the contents of the receiver.
+Uint64Slice returns slices of uint64 values and an error. The uint64
+values are based upon the contents of the receiver.
 
-Note that if any single arc number overflows uint64, a zero slice is returned alongside
-an error.
+Note that if any single arc number overflows uint64, a zero slice is
+returned alongside an error.
 
-Successful output can be cast as an instance of [crypto/x509.OID], if desired.
+Successful output can be cast as an instance of [crypto/x509.OID], if
+desired.
 */
 func (d DotNotation) Uint64Slice() (slice []uint64, err error) {
 	if d.IsZero() {

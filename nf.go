@@ -47,6 +47,8 @@ func (a NumberForm) Equal(n any) (is bool) {
 		is = a.cast().Cmp(nf) == 0
 	case uint64:
 		is = a.cast().Uint64() == tv
+	case uint:
+		is = a.cast().Uint64() == uint64(tv)
 	case int:
 		if 0 <= tv {
 			is = a.cast().Uint64() == uint64(tv)
@@ -77,6 +79,8 @@ func (a NumberForm) Gt(n any) (is bool) {
 		is = a.cast().Cmp(nf) == 1
 	case uint64:
 		is = a.cast().Uint64() > tv
+	case uint:
+		is = a.cast().Uint64() > uint64(tv)
 	case int:
 		if 0 <= tv {
 			is = a.cast().Uint64() > uint64(tv)
@@ -118,6 +122,8 @@ func (a NumberForm) Lt(n any) (is bool) {
 		is = a.cast().Cmp(nf) == -1
 	case uint64:
 		is = a.cast().Uint64() < tv
+	case uint:
+		is = a.cast().Uint64() < uint64(tv)
 	case int:
 		if 0 <= tv {
 			is = a.cast().Uint64() < uint64(tv)
@@ -153,9 +159,26 @@ func (a NumberForm) String() string {
 	return a.cast().String()
 }
 
+func newStringNF(tv string) (nf *big.Int, err error) {
+	if len(tv) == 0 {
+		err = errorf("Zero length NumberForm %T", tv)
+		return
+	} else if tv[0] == '-' {
+		err = errorf("A NumberForm cannot be negative")
+		return
+	}
+
+	var ok bool
+	if nf, ok = big.NewInt(0).SetString(tv, 10); !ok {
+		err = errorf("Failed to read '%s' into NumberForm", tv)
+	}
+
+	return
+}
+
 /*
-NewNumberForm converts v into an instance of [NumberForm], which
-is returned alongside an error.
+NewNumberForm converts v into an instance of [NumberForm], which is
+returned alongside an error.
 
 Acceptable input types are string, int and uint64. No decimal value,
 whether string or int, can ever be negative.
@@ -165,21 +188,10 @@ func NewNumberForm(v any) (a NumberForm, err error) {
 	case *big.Int:
 		a = NumberForm(*tv)
 	case string:
-		if len(tv) == 0 {
-			err = errorf("Zero length %T", a)
-			break
-		} else if tv[0] == '-' {
-			err = errorf("A NumberForm cannot be negative")
-			break
+		var _a *big.Int
+		if _a, err = newStringNF(tv); err == nil {
+			a = NumberForm(*_a)
 		}
-
-		_a, ok := big.NewInt(0).SetString(tv, 10)
-		if !ok {
-			err = errorf("Failed to read '%s' into %T", tv, a)
-			break
-		}
-
-		a = NumberForm(*_a)
 	case int:
 		if tv < 0 {
 			err = errorf("A NumberForm cannot be negative")
@@ -190,6 +202,9 @@ func NewNumberForm(v any) (a NumberForm, err error) {
 		a = NumberForm(*_a)
 	case uint64:
 		_a := big.NewInt(0).SetUint64(tv)
+		a = NumberForm(*_a)
+	case uint:
+		_a := big.NewInt(0).SetUint64(uint64(tv))
 		a = NumberForm(*_a)
 	default:
 		err = errorf("Unsupported %T type '%T'", a, tv)
