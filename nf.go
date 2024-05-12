@@ -62,7 +62,7 @@ func (a NumberForm) Equal(n any) (is bool) {
 
 /*
 Gt returns a boolean value indicative of whether the receiver is greater than
-the value provided. 
+the value provided.
 
 Valid input types are string, uint64, int, uint, *[math/big.Int] and [NumberForm].
 
