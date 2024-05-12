@@ -115,11 +115,11 @@ func TestBogusNameAndNumberForm(t *testing.T) {
 }
 
 func TestParseNaNFStr(t *testing.T) {
-	for idx, slice := range []string {
+	for idx, slice := range []string{
 		`cn(3)`,
 		`identifier(-3)`,
 	} {
-		nanf, err := parseNaNFstr(slice)
+		_, err := parseNaNFstr(slice)
 		if err != nil {
 			if idx%2 == 0 {
 				t.Errorf("%s failed: unexpected error: %v", t.Name(), err)
