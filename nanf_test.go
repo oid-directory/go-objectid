@@ -113,3 +113,23 @@ func TestBogusNameAndNumberForm(t *testing.T) {
 		t.Errorf("%s failed: parsed bogus string value without error", t.Name())
 	}
 }
+
+func TestParseNaNFStr(t *testing.T) {
+	for idx, slice := range []string {
+		`cn(3)`,
+		`identifier(-3)`,
+	} {
+		nanf, err := parseNaNFstr(slice)
+		if err != nil {
+			if idx%2 == 0 {
+				t.Errorf("%s failed: unexpected error: %v", t.Name(), err)
+			}
+			continue
+		} else {
+			if idx%2 != 0 {
+				t.Errorf("%s failed: expected error, got nothing", t.Name())
+				continue
+			}
+		}
+	}
+}
