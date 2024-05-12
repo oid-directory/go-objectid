@@ -22,8 +22,13 @@ func (id *OID) IsZero() (is bool) {
 /*
 Dot returns a [DotNotation] instance based on the contents of the underlying [ASN1Notation]
 instance found within the receiver.
+
+Note that at a receiver length of two (2) or more is required for successful output.
 */
 func (id OID) Dot() (d DotNotation) {
+	if id.Len() < 2 {
+		return
+	}
 	if !id.IsZero() {
 		d = make(DotNotation, len(id.nanf))
 		for i := 0; i < len(id.nanf); i++ {

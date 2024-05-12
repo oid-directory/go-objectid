@@ -21,6 +21,26 @@ func (a ASN1Notation) String() string {
 }
 
 /*
+Dot returns a [DotNotation] instance based on the contents of the receiver instance.
+
+Note that at a receiver length of two (2) or more is required for successful output.
+*/
+func (a ASN1Notation) Dot() (d DotNotation) {
+        if a.Len() < 2 {
+                return
+        }
+        if !a.IsZero() {
+		L := a.Len()
+                d = make(DotNotation, L)
+                for i := 0; i < L; i++ {
+                        d[i] = a[i].NumberForm()
+                }
+        }
+
+        return
+}
+
+/*
 Root returns the root node (0) string value from the receiver.
 */
 func (a ASN1Notation) Root() NameAndNumberForm {

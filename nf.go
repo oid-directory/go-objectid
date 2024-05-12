@@ -28,9 +28,11 @@ func (a NumberForm) cast() *big.Int {
 
 /*
 Equal returns a boolean value indicative of whether the receiver is equal to
-the value provided. Valid input types are string, uint64, int and [NumberForm].
+the value provided.
 
-Any input that represents a negative number guarantees a false return.
+Valid input types are string, uint64, int, uint, *[math/big.Int] and [NumberForm].
+
+Any input that represents a negative or unspecified number guarantees a false return.
 */
 func (a NumberForm) Equal(n any) (is bool) {
 	switch tv := n.(type) {
@@ -60,9 +62,11 @@ func (a NumberForm) Equal(n any) (is bool) {
 
 /*
 Gt returns a boolean value indicative of whether the receiver is greater than
-the value provided. Valid input types are string, uint64, int and [NumberForm].
+the value provided. 
 
-Any input that represents a negative number guarantees a false return.
+Valid input types are string, uint64, int, uint, *[math/big.Int] and [NumberForm].
+
+Any input that represents a negative or unspecified number guarantees a false return.
 */
 func (a NumberForm) Gt(n any) (is bool) {
 	switch tv := n.(type) {
@@ -91,11 +95,14 @@ func (a NumberForm) Gt(n any) (is bool) {
 
 /*
 Ge returns a boolean value indicative of whether the receiver is greater than
-or equal to the value provided. Valid input types are string, uint64, int and
-[NumberForm]. This method is merely a convenient wrapper to an ORed call of the
-[NumberForm.Gt] and [NumberForm.Equal] methods.
+or equal to the value provided.
 
-Any input that represents a negative number guarantees a false return.
+This method is merely a convenient wrapper to an ORed call of the [NumberForm.Gt]
+and [NumberForm.Equal] methods.
+
+Valid input types are string, uint64, int, uint, *[math/big.Int] and [NumberForm].
+
+Any input that represents a negative or unspecified number guarantees a false return.
 */
 func (a NumberForm) Ge(n any) (is bool) {
 	return a.Gt(n) || a.Equal(n)
@@ -103,9 +110,11 @@ func (a NumberForm) Ge(n any) (is bool) {
 
 /*
 Lt returns a boolean value indicative of whether the receiver is less than
-the value provided. Valid input types are string, uint64, int and [NumberForm].
+the value provided.
 
-Any input that represents a negative number guarantees a false return.
+Valid input types are string, uint64, int, uint, *[math/big.Int] and [NumberForm].
+
+Any input that represents a negative or unspecified number guarantees a false return.
 */
 func (a NumberForm) Lt(n any) (is bool) {
 	switch tv := n.(type) {
@@ -134,11 +143,14 @@ func (a NumberForm) Lt(n any) (is bool) {
 
 /*
 Le returns a boolean value indicative of whether the receiver is less than or
-equal to the value provided. Valid input types are string, uint64, int and
-[NumberForm]. This method is merely a convenient wrapper to an ORed call of the
-[NumberForm.Lt] and [NumberForm.Equal] methods.
+equal to the value provided.
 
-Any input that represents a negative number guarantees a false return.
+This method is merely a convenient wrapper to an ORed call of the [NumberForm.Lt]
+and [NumberForm.Equal] methods.
+
+Valid input types are string, uint64, int, uint, *[math/big.Int] and [NumberForm].
+
+Any input that represents a negative or unspecified number guarantees a false return.
 */
 func (a NumberForm) Le(n any) (is bool) {
 	return a.Lt(n) || a.Equal(n)
@@ -180,8 +192,9 @@ func newStringNF(tv string) (nf *big.Int, err error) {
 NewNumberForm converts v into an instance of [NumberForm], which is
 returned alongside an error.
 
-Acceptable input types are string, int and uint64. No decimal value,
-whether string or int, can ever be negative.
+Valid input types are string, uint64, int, uint, and *[math/big.Int].
+
+Any input that represents a negative or unspecified number guarantees an error.
 */
 func NewNumberForm(v any) (a NumberForm, err error) {
 	switch tv := v.(type) {

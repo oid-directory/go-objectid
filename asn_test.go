@@ -11,6 +11,34 @@ const (
 	testASN1Bogus        = `iso(1) identified-organization(3}`
 )
 
+func ExampleASN1Notation_Dot() {
+        aNot, err := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`)
+        if err != nil {                                                 
+                fmt.Println(err)                                        
+                return                                                  
+        }
+	dot := aNot.Dot()
+	fmt.Println(dot)
+	// Output: 1.3.6.1.4.1.56521.999
+}
+
+/*
+This example demonstrates a bogus [DotNotation] output due to the presence
+of less than two (2) [NameAndNumberForm] instances within the receiver. 
+
+[DotNotation] ALWAYS requires two (2) or more elements to be considered valid.
+*/
+func ExampleASN1Notation_Dot_bogus() {
+        aNot, err := NewASN1Notation(`{iso(1)}`)
+        if err != nil {                                                 
+                fmt.Println(err)                                        
+                return                                                  
+        }                                                               
+        dot := aNot.Dot()                                               
+        fmt.Println(dot)                                                
+        // Output:
+}
+
 func ExampleASN1Notation_Index() {
 	aNot, err := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`)
 	if err != nil {

@@ -43,6 +43,23 @@ func ExampleOID_Dot() {
 	// Output: 1.3.6.1.4.1.56521.999
 }
 
+/*                                                                      
+This example demonstrates a bogus [DotNotation] output due to the presence of
+less than two (2) [NameAndNumberForm] instances within the receiver. 
+                                                                        
+[DotNotation] ALWAYS requires two (2) or more elements to be considered valid.
+*/                                                                      
+func ExampleOID_Dot_bogus() {
+        id, err := NewOID(`{iso(1)}`)
+        if err != nil {
+                fmt.Println(err)
+                return
+        }
+        dot := id.Dot()
+        fmt.Println(dot)
+        // Output:                                                      
+} 
+
 func ExampleOID_Len() {
 	raw := `{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`
 	id, err := NewOID(raw)
