@@ -1,6 +1,10 @@
 package objectid
 
 /*
+asn.go handles ASN1Notation operations. For ASN.1 encoding/decoding, see codec.go.
+*/
+
+/*
 ASN1Notation contains an ordered sequence of [NameAndNumberForm] instances.
 */
 type ASN1Notation []NameAndNumberForm
@@ -93,7 +97,7 @@ NewASN1Notation returns an instance of *[ASN1Notation] alongside an error.
 Valid input forms for ASN.1 values are string (e.g.: "{iso(1)}") and string
 slices (e.g.: []string{"iso(1)", "identified-organization(3)" ...}).
 
-[NumberForm] values CANNOT be negative, and CANNOT overflow [NumberForm] (uint128).
+[NumberForm] values CANNOT be negative.
 */
 func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 	// prepare temporary instance

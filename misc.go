@@ -3,33 +3,33 @@ package objectid
 import (
 	"errors"
 	"fmt"
-	"math/big"
 	"strconv"
 	"strings"
 	"unicode"
 )
 
 var (
-	printf     func(string, ...any) (int, error)  = fmt.Printf
-	sprintf    func(string, ...any) string        = fmt.Sprintf
-	atoi       func(string) (int, error)          = strconv.Atoi
-	contains   func(string, string) bool          = strings.Contains
-	eq         func(string, string) bool          = strings.EqualFold
-	fields     func(string) []string              = strings.Fields
-	hasPrefix  func(string, string) bool          = strings.HasPrefix
-	hasSuffix  func(string, string) bool          = strings.HasSuffix
-	indexRune  func(string, rune) int             = strings.IndexRune
-	join       func([]string, string) string      = strings.Join
-	split      func(string, string) []string      = strings.Split
-	splitAfter func(string, string) []string      = strings.SplitAfter
-	splitN     func(string, string, int) []string = strings.SplitN
-	trimS      func(string) string                = strings.TrimSpace
-	trimL      func(string, string) string        = strings.TrimLeft
-	trimR      func(string, string) string        = strings.TrimRight
-	isDigit    func(rune) bool                    = unicode.IsDigit
-	isLetter   func(rune) bool                    = unicode.IsLetter
-	isLower    func(rune) bool                    = unicode.IsLower
-	isUpper    func(rune) bool                    = unicode.IsUpper
+	printf     func(string, ...any) (int, error)      = fmt.Printf
+	sprintf    func(string, ...any) string            = fmt.Sprintf
+	atoi       func(string) (int, error)              = strconv.Atoi
+	puint64    func(string, int, int) (uint64, error) = strconv.ParseUint
+	contains   func(string, string) bool              = strings.Contains
+	eq         func(string, string) bool              = strings.EqualFold
+	fields     func(string) []string                  = strings.Fields
+	hasPrefix  func(string, string) bool              = strings.HasPrefix
+	hasSuffix  func(string, string) bool              = strings.HasSuffix
+	indexRune  func(string, rune) int                 = strings.IndexRune
+	join       func([]string, string) string          = strings.Join
+	split      func(string, string) []string          = strings.Split
+	splitAfter func(string, string) []string          = strings.SplitAfter
+	splitN     func(string, string, int) []string     = strings.SplitN
+	trimS      func(string) string                    = strings.TrimSpace
+	trimL      func(string, string) string            = strings.TrimLeft
+	trimR      func(string, string) string            = strings.TrimRight
+	isDigit    func(rune) bool                        = unicode.IsDigit
+	isLetter   func(rune) bool                        = unicode.IsLetter
+	isLower    func(rune) bool                        = unicode.IsLower
+	isUpper    func(rune) bool                        = unicode.IsUpper
 )
 
 func errorf(msg any, x ...any) (err error) {
@@ -204,22 +204,5 @@ func condenseWHSP(b string) (a string) {
 		}
 	}
 
-	return
-}
-
-/*
-sscan is a closure function used by the NumberForm stringer
-for interoperability with fmt.Sscan.
-*/
-func sscan(s fmt.ScanState, ch rune, u *NumberForm) (err error) {
-	i := new(big.Int)
-	if err = i.Scan(s, ch); err == nil {
-		err = errorf("Value cannot be negative, nor can it have a bit length >128")
-		if 0 <= i.Sign() && i.BitLen() < 128 {
-			u.lo = i.Uint64()
-			u.hi = i.Rsh(i, 64).Uint64()
-			err = nil
-		}
-	}
 	return
 }
