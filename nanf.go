@@ -1,5 +1,7 @@
 package objectid
 
+import "math/big"
+
 /*
 nanf.go deals with NameAndNumberForm syntax and viability
 */
@@ -119,6 +121,39 @@ func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
 	return
 }
 
+func parseNaNFOrNF(tv string) (nanf *NameAndNumberForm, err error) {
+	nanf = new(NameAndNumberForm)
+
+	if !isNumber(tv) {
+		nanf, err = parseNaNFstr(tv)
+	} else {
+		var a NumberForm
+		if a, err = NewNumberForm(tv); err == nil {
+			nanf = &NameAndNumberForm{primaryIdentifier: a}
+		}
+	}
+
+	return
+}
+
+func parseNaNFBig(tv *big.Int) (nanf *NameAndNumberForm, err error) {
+	nanf = new(NameAndNumberForm)
+
+	if tv.Int64() < 0 {
+		err = errorf("NameAndNumberForm cannot contain a negative NumberForm")
+		return
+	}
+
+	if len(tv.Bytes()) == 0 {
+		err = errorf("NumberForm (%T) is nil", tv)
+		return
+	}
+
+	nanf.primaryIdentifier = NumberForm(*tv)
+
+	return
+}
+
 /*
 NewNameAndNumberForm returns an instance of *[NameAndNumberForm]
 alongside an error. Valid input forms are:
@@ -127,37 +162,37 @@ alongside an error. Valid input forms are:
 
 • numberForm (e.g.: 1)
 
-[NumberForm] components CANNOT be negative. Permitted input types
-are string, uint64 and (non-negative) int.
+[NumberForm] components CANNOT be negative. Permitted input types are
+string, uint, uint64, [NumberForm], *[math/big.Int] and (non-negative) int.
 */
 func NewNameAndNumberForm(x any) (nanf *NameAndNumberForm, err error) {
 
-	err = errorf("%T must conform to: identifier LPAREN numberForm RPAREN", nanf)
 	switch tv := x.(type) {
 	case string:
-		if !isNumber(tv) {
-			nanf, err = parseNaNFstr(tv)
-		} else {
-			var a NumberForm
-			if a, err = NewNumberForm(tv); err == nil {
-				nanf = &NameAndNumberForm{primaryIdentifier: a}
-			}
-		}
+		nanf, err = parseNaNFOrNF(tv)
+	case *big.Int:
+		nanf, err = parseNaNFBig(tv)
 	case NumberForm:
 		nanf = new(NameAndNumberForm)
 		nanf.primaryIdentifier = tv
 		err = nil
 	case uint64:
-		nanf = new(NameAndNumberForm)
 		u, _ := NewNumberForm(tv) // skip error checking, we know it won't overflow.
+		nanf = new(NameAndNumberForm)
 		nanf.primaryIdentifier = u
 		err = nil
+	case uint:
+		nanf = new(NameAndNumberForm)
+		nanf, err = NewNameAndNumberForm(uint64(tv))
 	case int:
-		if tv >= 0 {
-			nanf, err = NewNameAndNumberForm(uint64(tv))
+		nanf = new(NameAndNumberForm)
+		if tv < 0 {
+			err = errorf("NumberForm cannot be negative")
+			break
 		}
+		nanf, err = NewNameAndNumberForm(uint64(tv))
 	default:
-		err = errorf("Unsupported NameAndNumberForm input type '%T'", tv)
+		err = errorf("Unsupported %T input type '%T'", nanf, tv)
 	}
 
 	// mark this instance as complete,

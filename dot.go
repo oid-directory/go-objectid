@@ -429,12 +429,12 @@ func (d DotNotation) NewSubordinate(nf any) (dot *DotNotation) {
 /*
 Valid returns a Boolean value indicative of the following:
 
-  - Receiver's length is greater than or equal to one (1) slice member, AND ...
-  - The first slice in the receiver contains a decimal value that is less than three (3)
+  - Receiver's length is greater than or equal to two (2) slice members, AND ...
+  - The first slice in the receiver contains an unsigned decimal value that is less than three (3)
 */
 func (d DotNotation) Valid() (is bool) {
 	if !d.IsZero() {
-		is = d.Root().Lt(3)
+		is = d.Root().Lt(3) && d.Len() >= 2
 	}
 
 	return

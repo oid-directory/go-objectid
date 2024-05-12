@@ -2,6 +2,7 @@ package objectid
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 )
 
@@ -94,13 +95,20 @@ func TestNewNameAndNumberForm(t *testing.T) {
 		``,
 		nf,
 		`blarg`,
+		big.NewInt(42),
+		big.NewInt(-42),
+		uint64(3),
+		-4,
+		uint(0),
+		new(big.Int),
+		`thing(432897659847395789374568903476893476937468934769843)`,
 	} {
 		_, err = NewNameAndNumberForm(v)
 		if idx%2 == 0 && err != nil {
-			t.Errorf("%s failed: %v", t.Name(), err)
+			t.Errorf("%s[%d] failed: %v", t.Name(), idx, err)
 			return
 		} else if err == nil && idx%2 != 0 {
-			t.Errorf("%s failed: parsed bogus value without error", t.Name())
+			t.Errorf("%s[%d] failed: parsed bogus value without error", t.Name(), idx)
 			return
 		}
 	}
