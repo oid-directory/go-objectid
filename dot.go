@@ -69,6 +69,7 @@ Variadic input allows for slice mixtures of all of the following types,
 each treated as an individual [NumberForm] instance:
 
   - *[math/big.Int]
+  - [NumberForm]
   - string
   - uint64
   - uint
@@ -90,15 +91,19 @@ func NewDotNotation(x ...any) (d *DotNotation, err error) {
 	for i := 0; i < len(x) && err == nil; i++ {
 		var nf NumberForm
 		switch tv := x[i].(type) {
+		case NumberForm:
+			if !tv.Valid() {
+				err = errorf("Unsupported %T value", tv)
+				break
+			}
+			nf = tv
 		case *big.Int, string, uint64, uint, int:
 			nf, err = NewNumberForm(tv)
 		default:
 			err = errorf("Unsupported slice type '%T' for OID", tv)
 		}
 
-		if err == nil {
-			_d = append(_d, nf)
-		}
+		_d = append(_d, nf)
 	}
 
 	if err == nil {

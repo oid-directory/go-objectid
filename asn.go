@@ -131,10 +131,19 @@ instance other than as the respective root node.
 */
 func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 	// prepare temporary instance
-	t := new(ASN1Notation)
+	t := make(ASN1Notation, 0)
+	a = new(ASN1Notation)
 
 	var nfs []string
 	switch tv := x.(type) {
+	case []NameAndNumberForm:
+		t = ASN1Notation(tv)
+		if !t.Valid() {
+			err = errorf("%T instance did not pass validity checks: %#v", t, t)
+			break
+		}
+		*a = t
+		return
 	case string:
 		nfs = fields(condenseWHSP(trimR(trimL(tv, `{`), `}`)))
 	case []string:
@@ -144,24 +153,24 @@ func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 		return
 	}
 
-	for i := 0; i < len(nfs) && err == nil; i++ {
+	for i := 0; i < len(nfs); i++ {
 		var nanf *NameAndNumberForm
-		if nanf, err = NewNameAndNumberForm(nfs[i]); nanf != nil {
-			*t = append(*t, *nanf)
+		if nanf, err = NewNameAndNumberForm(nfs[i]); err != nil {
+			break
 		}
+		t = append(t, *nanf)
 	}
 
 	if err == nil {
 		// verify content is valid
 		if !t.Valid() {
-			err = errorf("%T instance did not pass validity checks: %#v", t, *t)
+			err = errorf("%T instance did not pass validity checks: %#v", t, t)
 			return
 		}
 
 		// transfer temporary content
 		// to return value instance.
-		a = new(ASN1Notation)
-		*a = *t
+		*a = t
 	}
 
 	return

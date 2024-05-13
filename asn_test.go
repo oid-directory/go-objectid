@@ -2,6 +2,7 @@ package objectid
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 )
 
@@ -151,6 +152,19 @@ func TestASN1Notation001(t *testing.T) {
 
 	if _, err = NewASN1Notation(float64(123)); err == nil {
 		t.Errorf("%s failed; no error where one was expected", t.Name())
+		return
+	}
+
+	if _, err = NewASN1Notation([]NameAndNumberForm{
+		{identifier: `iso`, primaryIdentifier: NumberForm(*big.NewInt(1)), parsed: true},
+		{identifier: `identified-organization`, primaryIdentifier: NumberForm(*big.NewInt(3)), parsed: true},
+	}); err != nil {
+		t.Errorf("%s error: %v", t.Name(), err)
+		return
+	}
+
+	if _, err = NewASN1Notation([]NameAndNumberForm{}); err == nil {
+		t.Errorf("%s error: %v", t.Name(), err)
 		return
 	}
 }

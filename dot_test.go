@@ -250,6 +250,27 @@ func TestDotNotation_codecov(t *testing.T) {
 		return
 	}
 
+	var nf1, nf2 NumberForm
+	if nf1, err = NewNumberForm(1); err != nil {
+		t.Errorf("%s failed: %v", t.Name(), err)
+		return
+	}
+	if nf2, err = NewNumberForm(3); err != nil {
+		t.Errorf("%s failed: %v", t.Name(), err)
+		return
+	}
+
+	if _, err = NewDotNotation(nf1, nf2); err != nil {
+		t.Errorf("%s failed: NumberForm error: %v", t.Name(), err)
+		return
+	}
+
+	var nf3, nf4 NumberForm
+	if _, err = NewDotNotation(nf3, nf4); err == nil {
+		t.Errorf("%s failed: no error where one was expected", t.Name())
+		return
+	}
+
 	var X DotNotation
 	_, _ = X.IntSlice()
 	_, _ = X.Uint64Slice()

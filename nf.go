@@ -160,7 +160,7 @@ func (a NumberForm) Le(n any) (is bool) {
 Valid returns a Boolean value indicative of proper initialization.
 */
 func (a NumberForm) Valid() bool {
-	return &a != nil
+	return !a.IsZero()
 }
 
 /*
