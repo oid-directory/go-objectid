@@ -113,11 +113,14 @@ func (r OID) Root() (nanf NameAndNumberForm) {
 /*
 NewOID creates an instance of [OID] and returns it alongside an error.
 
-The correct raw input syntax is the ASN.1 [NameAndNumberForm] sequence syntax, i.e.:
+Valid input forms for ASN.1 values are:
 
-	{iso(1) identified-organization(3) dod(6)}
+  - string (e.g.: "{iso(1) ... }")
+  - string slices (e.g.: []string{"iso(1)", "identified-organization(3)" ...})
+  - [NameAndNumberForm] slices ([][NameAndNumberForm]{...})
 
-Not all [NameAndNumberForm] values (arcs) require actual names; they can be numbers alone or in the so-called nameAndNumber syntax (name(Number)). For example:
+Not all [NameAndNumberForm] values (arcs) require actual names; they can be
+numbers alone or in the so-called nameAndNumber syntax (name(Number)). For example:
 
 	{iso(1) identified-organization(3) 6}
 
@@ -136,10 +139,21 @@ other than as the respective root node.
 [NumberForm] values CANNOT be negative, but are unbounded in their magnitude.
 */
 func NewOID(x any) (r *OID, err error) {
+	// prepare temporary instance
 	t := new(OID)
+	r = new(OID)
 
 	var nfs []string
 	switch tv := x.(type) {
+	case []NameAndNumberForm:
+		t.nanf = ASN1Notation(tv)
+		if !t.Valid() {
+			err = errorf("%T instance did not pass validity checks: %#v", t, t)
+			break
+		}
+		r.nanf = t.nanf
+		r.parsed = true
+		return
 	case string:
 		nfs = fields(condenseWHSP(trimR(trimL(tv, `{`), `}`)))
 	case []string:
@@ -149,11 +163,12 @@ func NewOID(x any) (r *OID, err error) {
 		return
 	}
 
-	for i := 0; i < len(nfs) && err == nil; i++ {
+	for i := 0; i < len(nfs); i++ {
 		var nanf *NameAndNumberForm
-		if nanf, err = NewNameAndNumberForm(nfs[i]); nanf != nil {
-			t.nanf = append(t.nanf, *nanf)
+		if nanf, err = NewNameAndNumberForm(nfs[i]); err != nil {
+			break
 		}
+		t.nanf = append(t.nanf, *nanf)
 	}
 
 	if err == nil {
@@ -162,9 +177,8 @@ func NewOID(x any) (r *OID, err error) {
 			return
 		}
 
-		r = new(OID)
 		r.parsed = true
-		*r = *t
+		r.nanf = t.nanf
 	}
 
 	return
