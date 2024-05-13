@@ -21,56 +21,56 @@ type NameAndNumberForm struct {
 IsZero returns a Boolean valu indicative of whether
 the receiver is considered nil.
 */
-func (nanf NameAndNumberForm) IsZero() bool {
-	return !nanf.parsed
+func (r NameAndNumberForm) IsZero() bool {
+	return !r.parsed
 }
 
 /*
 Identifier returns the string-based nameForm
 value assigned to the receiver instance.
 */
-func (nanf NameAndNumberForm) Identifier() string {
-	return nanf.identifier
+func (r NameAndNumberForm) Identifier() string {
+	return r.identifier
 }
 
 /*
 NumberForm returns the underlying [NumberForm]
 value assigned to the receiver instance.
 */
-func (nanf NameAndNumberForm) NumberForm() NumberForm {
-	return nanf.primaryIdentifier
+func (r NameAndNumberForm) NumberForm() NumberForm {
+	return r.primaryIdentifier
 }
 
 /*
 String is a stringer method that returns the properly
 formatted [NameAndNumberForm] string value.
 */
-func (nanf NameAndNumberForm) String() (val string) {
-	n := nanf.primaryIdentifier.String()
-	if len(nanf.identifier) == 0 {
+func (r NameAndNumberForm) String() (val string) {
+	n := r.primaryIdentifier.String()
+	if len(r.identifier) == 0 {
 		return n
 	}
-	return sprintf("%s(%s)", nanf.identifier, n)
+	return sprintf("%s(%s)", r.identifier, n)
 }
 
 /*
 Equal returns a Boolean value indicative of whether instance
 n of [NameAndNumberForm] matches the receiver.
 */
-func (nanf NameAndNumberForm) Equal(n any) (is bool) {
+func (r NameAndNumberForm) Equal(n any) (is bool) {
 	switch tv := n.(type) {
 	case NameAndNumberForm:
-		is = nanf.identifier == tv.identifier &&
-			nanf.primaryIdentifier.Equal(tv.primaryIdentifier)
+		is = r.identifier == tv.identifier &&
+			r.primaryIdentifier.Equal(tv.primaryIdentifier)
 	case *NameAndNumberForm:
-		is = nanf.identifier == tv.identifier &&
-			nanf.primaryIdentifier.Equal(tv.primaryIdentifier)
+		is = r.identifier == tv.identifier &&
+			r.primaryIdentifier.Equal(tv.primaryIdentifier)
 	}
 
 	return
 }
 
-func parseRootNameOnly(x string) (nanf *NameAndNumberForm, err error) {
+func parseRootNameOnly(x string) (r *NameAndNumberForm, err error) {
 	var root *big.Int
 	switch x {
 	case `itu-t`:
@@ -84,7 +84,7 @@ func parseRootNameOnly(x string) (nanf *NameAndNumberForm, err error) {
 	}
 
 	if err == nil {
-		nanf = &NameAndNumberForm{
+		r = &NameAndNumberForm{
 			parsed:            true,
 			identifier:        x,
 			primaryIdentifier: NumberForm(*root),
@@ -97,13 +97,13 @@ func parseRootNameOnly(x string) (nanf *NameAndNumberForm, err error) {
 /*
 parseNaNFstr returns an instance of *[NameAndNumberForm] alongside an error.
 */
-func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
+func parseNaNFstr(x string) (r *NameAndNumberForm, err error) {
 	// Don't waste time on bogus values.
 	if len(x) == 0 {
 		err = errorf("No content for parseNaNFstr to read")
 		return
 	} else if x[len(x)-1] != ')' {
-		nanf, err = parseRootNameOnly(x)
+		r, err = parseRootNameOnly(x)
 		return
 	}
 
@@ -136,32 +136,32 @@ func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
 	var prid NumberForm
 	if prid, err = NewNumberForm(n); err == nil {
 		// Prepare to return valid information.
-		nanf = new(NameAndNumberForm)
-		nanf.parsed = true
-		nanf.primaryIdentifier = prid
-		nanf.identifier = x[:idx]
+		r = new(NameAndNumberForm)
+		r.parsed = true
+		r.primaryIdentifier = prid
+		r.identifier = x[:idx]
 	}
 
 	return
 }
 
-func parseNaNFOrNF(tv string) (nanf *NameAndNumberForm, err error) {
-	nanf = new(NameAndNumberForm)
+func parseNaNFOrNF(tv string) (r *NameAndNumberForm, err error) {
+	r = new(NameAndNumberForm)
 
 	if !isNumber(tv) {
-		nanf, err = parseNaNFstr(tv)
+		r, err = parseNaNFstr(tv)
 	} else {
 		var a NumberForm
 		if a, err = NewNumberForm(tv); err == nil {
-			nanf = &NameAndNumberForm{primaryIdentifier: a}
+			r = &NameAndNumberForm{primaryIdentifier: a}
 		}
 	}
 
 	return
 }
 
-func parseNaNFBig(tv *big.Int) (nanf *NameAndNumberForm, err error) {
-	nanf = new(NameAndNumberForm)
+func parseNaNFBig(tv *big.Int) (r *NameAndNumberForm, err error) {
+	r = new(NameAndNumberForm)
 
 	if tv.Int64() < 0 {
 		err = errorf("NameAndNumberForm cannot contain a negative NumberForm")
@@ -173,7 +173,7 @@ func parseNaNFBig(tv *big.Int) (nanf *NameAndNumberForm, err error) {
 		return
 	}
 
-	nanf.primaryIdentifier = NumberForm(*tv)
+	r.primaryIdentifier = NumberForm(*tv)
 
 	return
 }
@@ -189,38 +189,38 @@ alongside an error. Valid input forms are:
 [NumberForm] components CANNOT be negative. Permitted input types are
 string, uint, uint64, [NumberForm], *[math/big.Int] and (non-negative) int.
 */
-func NewNameAndNumberForm(x any) (nanf *NameAndNumberForm, err error) {
+func NewNameAndNumberForm(x any) (r *NameAndNumberForm, err error) {
 
 	switch tv := x.(type) {
 	case string:
-		nanf, err = parseNaNFOrNF(tv)
+		r, err = parseNaNFOrNF(tv)
 	case *big.Int:
-		nanf, err = parseNaNFBig(tv)
+		r, err = parseNaNFBig(tv)
 	case NumberForm:
-		nanf = new(NameAndNumberForm)
-		nanf.primaryIdentifier = tv
+		r = new(NameAndNumberForm)
+		r.primaryIdentifier = tv
 	case uint64:
 		u, _ := NewNumberForm(tv) // skip error checking, we know it won't overflow.
-		nanf = new(NameAndNumberForm)
-		nanf.primaryIdentifier = u
+		r = new(NameAndNumberForm)
+		r.primaryIdentifier = u
 	case uint:
-		nanf = new(NameAndNumberForm)
-		nanf, err = NewNameAndNumberForm(uint64(tv))
+		r = new(NameAndNumberForm)
+		r, err = NewNameAndNumberForm(uint64(tv))
 	case int:
-		nanf = new(NameAndNumberForm)
+		r = new(NameAndNumberForm)
 		if tv < 0 {
 			err = errorf("NumberForm cannot be negative")
 			break
 		}
-		nanf, err = NewNameAndNumberForm(uint64(tv))
+		r, err = NewNameAndNumberForm(uint64(tv))
 	default:
-		err = errorf("Unsupported %T input type '%T'", nanf, tv)
+		err = errorf("Unsupported %T input type '%T'", r, tv)
 	}
 
 	// mark this instance as complete,
 	// assuming no errors were found.
 	if err == nil {
-		nanf.parsed = true
+		r.parsed = true
 	}
 
 	return

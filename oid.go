@@ -12,9 +12,9 @@ type OID struct {
 /*
 IsZero checks the receiver for nilness and returns a Boolean indicative of the result.
 */
-func (id *OID) IsZero() (is bool) {
-	if id != nil {
-		is = len(id.nanf) == 0
+func (r *OID) IsZero() (is bool) {
+	if r != nil {
+		is = len(r.nanf) == 0
 	}
 	return
 }
@@ -25,14 +25,14 @@ instance found within the receiver.
 
 Note that at a receiver length of two (2) or more is required for successful output.
 */
-func (id OID) Dot() (d DotNotation) {
-	if id.Len() < 2 {
+func (r OID) Dot() (d DotNotation) {
+	if r.Len() < 2 {
 		return
 	}
-	if !id.IsZero() {
-		d = make(DotNotation, len(id.nanf))
-		for i := 0; i < len(id.nanf); i++ {
-			d[i] = id.nanf[i].NumberForm()
+	if !r.IsZero() {
+		d = make(DotNotation, len(r.nanf))
+		for i := 0; i < len(r.nanf); i++ {
+			d[i] = r.nanf[i].NumberForm()
 		}
 	}
 
@@ -42,9 +42,9 @@ func (id OID) Dot() (d DotNotation) {
 /*
 ASN returns the underlying [ASN1Notation] instance found within the receiver.
 */
-func (id OID) ASN() (a ASN1Notation) {
-	if !id.IsZero() {
-		a = id.nanf
+func (r OID) ASN() (a ASN1Notation) {
+	if !r.IsZero() {
+		a = r.nanf
 	}
 	return
 }
@@ -52,10 +52,10 @@ func (id OID) ASN() (a ASN1Notation) {
 /*
 Valid returns a Boolean value indicative of whether the receiver's state is considered value.
 */
-func (id OID) Valid() (ok bool) {
-	if !id.IsZero() {
+func (r OID) Valid() (ok bool) {
+	if !r.IsZero() {
 		var nanf NameAndNumberForm
-		if nanf, ok = id.nanf.Index(0); ok {
+		if nanf, ok = r.nanf.Index(0); ok {
 			var found bool
 			for i := 0; i < 3; i++ {
 				if nanf.NumberForm().Equal(i) {
@@ -72,9 +72,9 @@ func (id OID) Valid() (ok bool) {
 /*
 Len returns the integer length of all underlying [NumberForm] values present within the receiver.
 */
-func (id OID) Len() (i int) {
-	if !id.IsZero() {
-		i = len(id.nanf)
+func (r OID) Len() (i int) {
+	if !r.IsZero() {
+		i = len(r.nanf)
 	}
 
 	return
@@ -83,9 +83,9 @@ func (id OID) Len() (i int) {
 /*
 Leaf returns the leaf-node instance of [NameAndNumberForm].
 */
-func (id OID) Leaf() (nanf NameAndNumberForm) {
-	if !id.IsZero() {
-		nanf, _ = id.nanf.Index(-1)
+func (r OID) Leaf() (nanf NameAndNumberForm) {
+	if !r.IsZero() {
+		nanf, _ = r.nanf.Index(-1)
 	}
 	return
 }
@@ -93,9 +93,9 @@ func (id OID) Leaf() (nanf NameAndNumberForm) {
 /*
 Parent returns the leaf-node's Parent instance of [NameAndNumberForm].
 */
-func (id OID) Parent() (nanf NameAndNumberForm) {
-	if !id.IsZero() {
-		nanf, _ = id.nanf.Index(-2)
+func (r OID) Parent() (nanf NameAndNumberForm) {
+	if !r.IsZero() {
+		nanf, _ = r.nanf.Index(-2)
 	}
 	return
 }
@@ -103,9 +103,9 @@ func (id OID) Parent() (nanf NameAndNumberForm) {
 /*
 Root returns the root node instance of [NameAndNumberForm].
 */
-func (id OID) Root() (nanf NameAndNumberForm) {
-	if !id.IsZero() {
-		nanf, _ = id.nanf.Index(0)
+func (r OID) Root() (nanf NameAndNumberForm) {
+	if !r.IsZero() {
+		nanf, _ = r.nanf.Index(0)
 	}
 	return
 }
@@ -135,7 +135,7 @@ other than as the respective root node.
 
 [NumberForm] values CANNOT be negative, but are unbounded in their magnitude.
 */
-func NewOID(x any) (o *OID, err error) {
+func NewOID(x any) (r *OID, err error) {
 	t := new(OID)
 
 	var nfs []string
@@ -162,9 +162,9 @@ func NewOID(x any) (o *OID, err error) {
 			return
 		}
 
-		o = new(OID)
-		o.parsed = true
-		*o = *t
+		r = new(OID)
+		r.parsed = true
+		*r = *t
 	}
 
 	return
