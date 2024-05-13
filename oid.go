@@ -122,6 +122,18 @@ Not all [NameAndNumberForm] values (arcs) require actual names; they can be numb
 	{iso(1) identified-organization(3) 6}
 
 ... is perfectly valid, but generally NOT recommended when clarity or precision is desired.
+
+Note that the following root node abbreviations are supported:
+
+  - `itu-t` resolves to itu-t(0)
+  - `iso` resolves to iso(1)
+  - `joint-iso-itu-t` resolves to joint-iso-itu-t(2)
+
+Case is significant during processing of the above abbreviations.  Note that it is
+inappropriate to utilize these abbreviations for any portion of an [OID] instance
+other than as the respective root node.
+
+[NumberForm] values CANNOT be negative, but are unbounded in their magnitude.
 */
 func NewOID(x any) (o *OID, err error) {
 	t := new(OID)
@@ -145,13 +157,14 @@ func NewOID(x any) (o *OID, err error) {
 	}
 
 	if err == nil {
-		err = errorf("%T instance did not pass validity checks: %#v", t, *t)
-		if t.Valid() {
-			o = new(OID)
-			o.parsed = true
-			*o = *t
-			err = nil
+		if !t.Valid() {
+			err = errorf("%T instance did not pass validity checks: %#v", t, *t)
+			return
 		}
+
+		o = new(OID)
+		o.parsed = true
+		*o = *t
 	}
 
 	return

@@ -117,7 +117,17 @@ NewASN1Notation returns an instance of *[ASN1Notation] alongside an error.
 Valid input forms for ASN.1 values are string (e.g.: "{iso(1)}") and string
 slices (e.g.: []string{"iso(1)", "identified-organization(3)" ...}).
 
-[NumberForm] values CANNOT be negative.
+Note that the following root node abbreviations are supported:
+
+  - `itu-t` resolves to itu-t(0)
+  - `iso` resolves to iso(1)
+  - `joint-iso-itu-t` resolves to joint-iso-itu-t(2)
+
+Case is significant during processing of the above abbreviations.  Note that it is
+inappropriate to utilize these abbreviations for any portion of an [ASN1Notation]
+instance other than as the respective root node.
+
+[NumberForm] values CANNOT be negative, but are unbounded in their magnitude.
 */
 func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 	// prepare temporary instance
@@ -141,18 +151,17 @@ func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 		}
 	}
 
-	if err != nil {
-		return
-	}
+	if err == nil {
+		// verify content is valid
+		if !t.Valid() {
+			err = errorf("%T instance did not pass validity checks: %#v", t, *t)
+			return
+		}
 
-	// verify content is valid
-	err = errorf("%T instance did not pass validity checks: %#v", t, *t)
-	if t.Valid() {
 		// transfer temporary content
 		// to return value instance.
 		a = new(ASN1Notation)
 		*a = *t
-		err = nil
 	}
 
 	return

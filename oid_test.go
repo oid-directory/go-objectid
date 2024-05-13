@@ -127,3 +127,25 @@ func ExampleOID_Root() {
 	fmt.Printf("Root node: %s", id.Root())
 	// Output: Root node: joint-iso-itu-t(2)
 }
+
+func TestOID_bogus(t *testing.T) {
+	if _, err := NewOID(testASN1Bogus); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewOID(`iso(3) identified-organization(3)`); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewOID(`itu-t recommendation(-3)`); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewOID(`joint-iso-itu-t thing`); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+}

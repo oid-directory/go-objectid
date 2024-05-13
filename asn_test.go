@@ -181,6 +181,21 @@ func TestASN1Notation_bogus(t *testing.T) {
 		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
 		return
 	}
+
+	if _, err := NewASN1Notation(`iso(3) identified-organization(3)`); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewASN1Notation(`itu-t recommendation(-3)`); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewASN1Notation(`joint-iso-itu-t thing`); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
 }
 
 func TestASN1Notation_Ancestry(t *testing.T) {

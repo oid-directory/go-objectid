@@ -75,14 +75,14 @@ func ExampleDotNotation_Root() {
 }
 
 func ExampleNewASN1Notation() {
-	a := `{iso(1) identified-organization(3) dod(6)}`
+	a := `{iso identified-organization(3) dod(6)}`
 	id, err := NewASN1Notation(a)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("Leaf node: %s", id.Leaf())
-	// Output: Leaf node: dod(6)
+	fmt.Printf("Root node: %s", id.Root())
+	// Output: Root node: iso(1)
 }
 
 func ExampleDotNotation_IntSlice() {

@@ -70,6 +70,30 @@ func (nanf NameAndNumberForm) Equal(n any) (is bool) {
 	return
 }
 
+func parseRootNameOnly(x string) (nanf *NameAndNumberForm, err error) {
+	var root *big.Int
+	switch x {
+	case `itu-t`:
+		root = big.NewInt(0)
+	case `iso`:
+		root = big.NewInt(1)
+	case `joint-iso-itu-t`:
+		root = big.NewInt(2)
+	default:
+		err = errorf("Unknown root abbreviation, or no closing NumberForm parenthesis to read")
+	}
+
+	if err == nil {
+		nanf = &NameAndNumberForm{
+			parsed:            true,
+			identifier:        x,
+			primaryIdentifier: NumberForm(*root),
+		}
+	}
+
+	return
+}
+
 /*
 parseNaNFstr returns an instance of *[NameAndNumberForm] alongside an error.
 */
@@ -79,7 +103,7 @@ func parseNaNFstr(x string) (nanf *NameAndNumberForm, err error) {
 		err = errorf("No content for parseNaNFstr to read")
 		return
 	} else if x[len(x)-1] != ')' {
-		err = errorf("No closing parenthesis for parseNaNFstr to read")
+		nanf, err = parseRootNameOnly(x)
 		return
 	}
 
@@ -175,12 +199,10 @@ func NewNameAndNumberForm(x any) (nanf *NameAndNumberForm, err error) {
 	case NumberForm:
 		nanf = new(NameAndNumberForm)
 		nanf.primaryIdentifier = tv
-		err = nil
 	case uint64:
 		u, _ := NewNumberForm(tv) // skip error checking, we know it won't overflow.
 		nanf = new(NameAndNumberForm)
 		nanf.primaryIdentifier = u
-		err = nil
 	case uint:
 		nanf = new(NameAndNumberForm)
 		nanf, err = NewNameAndNumberForm(uint64(tv))
