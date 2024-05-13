@@ -2,6 +2,7 @@ package objectid
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 )
 
@@ -146,6 +147,19 @@ func TestOID_bogus(t *testing.T) {
 
 	if _, err := NewOID(`joint-iso-itu-t thing`); err == nil {
 		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewOID([]NameAndNumberForm{
+		{identifier: `iso`, primaryIdentifier: NumberForm(*big.NewInt(1)), parsed: true},
+		{identifier: `identified-organization`, primaryIdentifier: NumberForm(*big.NewInt(3)), parsed: true},
+	}); err != nil {
+		t.Errorf("%s error: %v", t.Name(), err)
+		return
+	}
+
+	if _, err := NewOID([]NameAndNumberForm{}); err == nil {
+		t.Errorf("%s error: %v", t.Name(), err)
 		return
 	}
 }

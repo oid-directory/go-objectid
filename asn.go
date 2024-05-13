@@ -114,8 +114,11 @@ func (r ASN1Notation) Index(idx int) (nanf NameAndNumberForm, ok bool) {
 /*
 NewASN1Notation returns an instance of *[ASN1Notation] alongside an error.
 
-Valid input forms for ASN.1 values are string (e.g.: "{iso(1)}") and string
-slices (e.g.: []string{"iso(1)", "identified-organization(3)" ...}).
+Valid input forms for ASN.1 values are:
+
+  - string (e.g.: "{iso(1) ... }")
+  - string slices (e.g.: []string{"iso(1)", "identified-organization(3)" ...})
+  - [NameAndNumberForm] slices ([][NameAndNumberForm]{...})
 
 Note that the following root node abbreviations are supported:
 
