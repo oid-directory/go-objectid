@@ -80,6 +80,3 @@ jobs:
       uses: github/codeql-action/analyze@v2
       with:
         category: "/language:${{matrix.language}}"
-
-    - name: OSSF Scorecard action                                       
-      uses: ossf/scorecard-action@v2.3.3
