@@ -16,7 +16,7 @@ func ExampleNewNumberForm() {
 }
 
 func ExampleNewOID() {
-	// UUID-based (uint128) OID example
+	// X.667 example
 	a := `{joint-iso-itu-t(2) uuid(25) ans(987895962269883002155146617097157934)}`
 	id, err := NewOID(a)
 	if err != nil {
@@ -75,14 +75,14 @@ func ExampleDotNotation_Root() {
 }
 
 func ExampleNewASN1Notation() {
-	a := `{iso(1) identified-organization(3) dod(6)}`
+	a := `{iso identified-organization(3) dod(6)}`
 	id, err := NewASN1Notation(a)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("Leaf node: %s", id.Leaf())
-	// Output: Leaf node: dod(6)
+	fmt.Printf("Root node: %s", id.Root())
+	// Output: Root node: iso(1)
 }
 
 func ExampleDotNotation_IntSlice() {
@@ -90,7 +90,7 @@ func ExampleDotNotation_IntSlice() {
 	dot, _ := NewDotNotation(a)
 
 	// If needed, slice instance can be
-	// cast as an asn1.ObjectIdentifier.
+	// cast as asn1.ObjectIdentifier.
 	slice, err := dot.IntSlice()
 	if err != nil {
 		fmt.Println(err)
@@ -98,6 +98,22 @@ func ExampleDotNotation_IntSlice() {
 	}
 	fmt.Printf("%v", slice)
 	// Output: [1 3 6 1 4 1 56521 999 5]
+}
+
+func ExampleDotNotation_Uint64Slice() {
+	a := `1.3.6.1.4.1.56521.9999999999999999999.5` // overflows int, but not uint64
+	dot, _ := NewDotNotation(a)
+
+	// If needed, slice instance can be
+	// fed to crypto/x509.OIDFromInts
+	slice, err := dot.Uint64Slice()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%v", slice)
+	// Output: [1 3 6 1 4 1 56521 9999999999999999999 5]
 }
 
 func ExampleDotNotation_IntSlice_overflow() {
@@ -108,6 +124,16 @@ func ExampleDotNotation_IntSlice_overflow() {
 		return
 	}
 	// Output: strconv.Atoi: parsing "987895962269883002155146617097157934": value out of range
+}
+
+func ExampleDotNotation_Uint64Slice_overflow() {
+	a := `2.25.987895962269883002155146617097157934`
+	dot, _ := NewDotNotation(a)
+	if _, err := dot.Uint64Slice(); err != nil {
+		fmt.Println(err)
+		return
+	}
+	// Output: strconv.ParseUint: parsing "987895962269883002155146617097157934": value out of range
 }
 
 func ExampleDotNotation_Ancestry() {

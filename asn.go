@@ -1,6 +1,10 @@
 package objectid
 
 /*
+asn.go handles ASN1Notation operations. For ASN.1 encoding/decoding, see codec.go.
+*/
+
+/*
 ASN1Notation contains an ordered sequence of [NameAndNumberForm] instances.
 */
 type ASN1Notation []NameAndNumberForm
@@ -8,49 +12,69 @@ type ASN1Notation []NameAndNumberForm
 /*
 String is a stringer method that returns a properly formatted ASN.1 string value.
 */
-func (a ASN1Notation) String() string {
+func (r ASN1Notation) String() string {
 	var x []string
-	for i := 0; i < len(a); i++ {
-		x = append(x, a[i].String())
+	for i := 0; i < len(r); i++ {
+		x = append(x, r[i].String())
 	}
 	return `{` + join(x, ` `) + `}`
 }
 
 /*
+Dot returns a [DotNotation] instance based on the contents of the receiver instance.
+
+Note that at a receiver length of two (2) or more is required for successful output.
+*/
+func (r ASN1Notation) Dot() (d DotNotation) {
+	if r.Len() < 2 {
+		return
+	}
+	if !r.IsZero() {
+		L := r.Len()
+		d = make(DotNotation, L)
+		for i := 0; i < L; i++ {
+			d[i] = r[i].NumberForm()
+		}
+	}
+
+	return
+}
+
+/*
 Root returns the root node (0) string value from the receiver.
 */
-func (a ASN1Notation) Root() NameAndNumberForm {
-	x, _ := a.Index(0)
+func (r ASN1Notation) Root() NameAndNumberForm {
+	x, _ := r.Index(0)
 	return x
 }
 
 /*
 Leaf returns the leaf node (-1) string value from the receiver.
 */
-func (a ASN1Notation) Leaf() NameAndNumberForm {
-	x, _ := a.Index(-1)
+func (r ASN1Notation) Leaf() NameAndNumberForm {
+	x, _ := r.Index(-1)
 	return x
 }
 
 /*
 Parent returns the leaf node's parent (-2) string value from the receiver.
 */
-func (a ASN1Notation) Parent() NameAndNumberForm {
-	x, _ := a.Index(-2)
+func (r ASN1Notation) Parent() NameAndNumberForm {
+	x, _ := r.Index(-2)
 	return x
 }
 
 /*
 Len returns the integer length of the receiver.
 */
-func (a ASN1Notation) Len() int { return len(a) }
+func (r ASN1Notation) Len() int { return len(r) }
 
 /*
 IsZero returns a Boolean indicative of whether the receiver is unset.
 */
-func (a ASN1Notation) IsZero() (is bool) {
-	if is = &a == nil; !is {
-		is = a.Len() == 0
+func (r ASN1Notation) IsZero() (is bool) {
+	if is = &r == nil; !is {
+		is = r.Len() == 0
 	}
 
 	return
@@ -61,22 +85,22 @@ Index returns the Nth index from the receiver, alongside a Boolean
 value indicative of success. This method supports the use of negative
 indices.
 */
-func (a ASN1Notation) Index(idx int) (nanf NameAndNumberForm, ok bool) {
-	L := a.Len()
+func (r ASN1Notation) Index(idx int) (nanf NameAndNumberForm, ok bool) {
+	L := r.Len()
 
 	// Bail if receiver is empty.
 	if L > 0 {
 		if idx < 0 {
 			var x int = L + idx
 			if x < 0 {
-				nanf = a[0]
+				nanf = r[0]
 			} else {
-				nanf = a[x]
+				nanf = r[x]
 			}
 		} else if idx > L {
-			nanf = a[L-1]
+			nanf = r[L-1]
 		} else {
-			nanf = a[idx]
+			nanf = r[idx]
 		}
 	}
 
@@ -93,14 +117,33 @@ NewASN1Notation returns an instance of *[ASN1Notation] alongside an error.
 Valid input forms for ASN.1 values are string (e.g.: "{iso(1)}") and string
 slices (e.g.: []string{"iso(1)", "identified-organization(3)" ...}).
 
-[NumberForm] values CANNOT be negative, and CANNOT overflow [NumberForm] (uint128).
+Note that the following root node abbreviations are supported:
+
+  - `itu-t` resolves to itu-t(0)
+  - `iso` resolves to iso(1)
+  - `joint-iso-itu-t` resolves to joint-iso-itu-t(2)
+
+Case is significant during processing of the above abbreviations.  Note that it is
+inappropriate to utilize these abbreviations for any portion of an [ASN1Notation]
+instance other than as the respective root node.
+
+[NumberForm] values CANNOT be negative, but are unbounded in their magnitude.
 */
-func NewASN1Notation(x any) (a *ASN1Notation, err error) {
+func NewASN1Notation(x any) (r *ASN1Notation, err error) {
 	// prepare temporary instance
-	t := new(ASN1Notation)
+	t := make(ASN1Notation, 0)
+	r = new(ASN1Notation)
 
 	var nfs []string
 	switch tv := x.(type) {
+	case []NameAndNumberForm:
+		t = ASN1Notation(tv)
+		if !t.Valid() {
+			err = errorf("%T instance did not pass validity checks: %#v", t, t)
+			break
+		}
+		*r = t
+		return
 	case string:
 		nfs = fields(condenseWHSP(trimR(trimL(tv, `{`), `}`)))
 	case []string:
@@ -110,25 +153,24 @@ func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 		return
 	}
 
-	for i := 0; i < len(nfs) && err == nil; i++ {
+	for i := 0; i < len(nfs); i++ {
 		var nanf *NameAndNumberForm
-		if nanf, err = NewNameAndNumberForm(nfs[i]); nanf != nil {
-			*t = append(*t, *nanf)
+		if nanf, err = NewNameAndNumberForm(nfs[i]); err != nil {
+			break
 		}
+		t = append(t, *nanf)
 	}
 
-	if err != nil {
-		return
-	}
+	if err == nil {
+		// verify content is valid
+		if !t.Valid() {
+			err = errorf("%T instance did not pass validity checks: %#v", t, t)
+			return
+		}
 
-	// verify content is valid
-	err = errorf("%T instance did not pass validity checks: %#v", t, *t)
-	if t.Valid() {
 		// transfer temporary content
 		// to return value instance.
-		a = new(ASN1Notation)
-		*a = *t
-		err = nil
+		*r = t
 	}
 
 	return
@@ -138,11 +180,11 @@ func NewASN1Notation(x any) (a *ASN1Notation, err error) {
 Valid returns a Boolean value indicative of whether the receiver's
 length is greater than or equal to one (1) slice member.
 */
-func (a ASN1Notation) Valid() (is bool) {
+func (r ASN1Notation) Valid() (is bool) {
 	// Don't waste time on
 	// zero instances.
-	if L := a.Len(); L > 0 {
-		if root, ok := a.Index(0); ok {
+	if L := r.Len(); L > 0 {
+		if root, ok := r.Index(0); ok {
 			// root cannot be greater than 2
 			is = root.NumberForm().Lt(3)
 		}
@@ -158,10 +200,10 @@ Ancestry returns slices of [DotNotation] values ordered from leaf node
 Empty slices of DotNotation are returned if the dotNotation value
 within the receiver is less than two (2) [NumberForm] values in length.
 */
-func (a ASN1Notation) Ancestry() (anc []ASN1Notation) {
-	if a.Len() >= 2 {
-		for i := a.Len(); i > 0; i-- {
-			anc = append(anc, a[:i])
+func (r ASN1Notation) Ancestry() (anc []ASN1Notation) {
+	if r.Len() >= 2 {
+		for i := r.Len(); i > 0; i-- {
+			anc = append(anc, r[:i])
 		}
 	}
 
@@ -174,15 +216,14 @@ contents of the receiver as well as the input [NameAndNumberForm]
 subordinate value. This creates a fully-qualified child [ASN1Notation]
 value of the receiver.
 */
-func (a ASN1Notation) NewSubordinate(nanf any) *ASN1Notation {
+func (r ASN1Notation) NewSubordinate(nanf any) *ASN1Notation {
 	var A ASN1Notation
-	if a.Len() > 0 {
-		// Prepare the new leaf numberForm,
-		// or die trying.
+	if r.Len() > 0 {
+		// Prepare the new leaf numberForm, or die trying.
 		if n, err := NewNameAndNumberForm(nanf); err == nil {
-			A = make(ASN1Notation, a.Len()+1, a.Len()+1)
-			for i := 0; i < a.Len(); i++ {
-				A[i] = a[i]
+			A = make(ASN1Notation, r.Len()+1, r.Len()+1)
+			for i := 0; i < r.Len(); i++ {
+				A[i] = r[i]
 			}
 			A[A.Len()-1] = *n
 		}
@@ -195,8 +236,8 @@ func (a ASN1Notation) NewSubordinate(nanf any) *ASN1Notation {
 AncestorOf returns a Boolean value indicative of whether the receiver
 is an ancestor of the input value, which can be string or [ASN1Notation].
 */
-func (a ASN1Notation) AncestorOf(asn any) (anc bool) {
-	if !a.IsZero() {
+func (r ASN1Notation) AncestorOf(asn any) (anc bool) {
+	if !r.IsZero() {
 		var A *ASN1Notation
 
 		switch tv := asn.(type) {
@@ -212,19 +253,19 @@ func (a ASN1Notation) AncestorOf(asn any) (anc bool) {
 			}
 		}
 
-		if A.Len() > a.Len() {
-			anc = a.matchASN1(A)
+		if A.Len() > r.Len() {
+			anc = r.matchASN1(A)
 		}
 	}
 
 	return
 }
 
-func (a ASN1Notation) matchASN1(asn *ASN1Notation) (matched bool) {
-	L := a.Len()
+func (r ASN1Notation) matchASN1(asn *ASN1Notation) (matched bool) {
+	L := r.Len()
 	ct := 0
 	for i := 0; i < L; i++ {
-		x, _ := a.Index(i)
+		x, _ := r.Index(i)
 		if y, ok := asn.Index(i); ok {
 			if x.Equal(y) {
 				ct++

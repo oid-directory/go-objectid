@@ -2,6 +2,7 @@ package objectid
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 )
 
@@ -12,8 +13,13 @@ func TestNewNumberForm(t *testing.T) {
 		`3849141823758536772162786183725055278`,
 		-103,
 		`9399368356398566872162777255735125541`,
-		`939936835639856687216277725573512554138275978532897358923759872389572389572893758923758923758923759823`, // >uint128
+		`-939936835639856687216277725573512554138275978532897358923759872389572389572893758923758923758923759823`,
+		`939936835639856687216277725573512554138275978532897358923759872389572389572893758923758923758923759823`,
+		`bigly`,
 		`0`,
+		rune(42),
+		big.NewInt(28),
+		``,
 	} {
 		nf, err := NewNumberForm(num)
 		ok := err == nil
@@ -25,37 +31,7 @@ func TestNewNumberForm(t *testing.T) {
 			return
 		}
 
-		_ = nf.len()
 		_ = nf.String()
-		_, _ = nf.quoRem64(uint64(idx+1)) // codecov
-	}
-
-	var nf NumberForm
-	_ = nf.gtLt(nil, true)  // codecov
-	_ = nf.gtLt(nil, false) // codecov
-}
-
-func TestQuorem64(t *testing.T) {
-	for _, z := range []int{
-		0,
-		1,
-		225,
-		18457,
-		9,
-	} {
-		x, _ := NewNumberForm(z)
-		for _, y := range []uint64{
-			// don't send zero
-			uint64(13),
-			uint64(17284),
-			^uint64(0),
-			uint64(1),
-			uint64(14895623),
-			uint64(1234),
-			uint64(4895623),
-		} {
-			_, _ = x.quoRem64(y)
-		}
 	}
 }
 
@@ -80,11 +56,23 @@ func TestNumberForm_Gt(t *testing.T) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
 
+	if nf, _ = NewNumberForm(`437829765`); nf.Gt(`fargus`) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); nf.Gt(`500000000`) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); !nf.Gt(uint(5000)) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
 	if nf, _ = NewNumberForm(`437829765`); nf.Gt(500000000) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
 
-	if nf, _ = NewNumberForm(uint64(829765)); nf.Gt(500000000) {
+	if nf, _ = NewNumberForm(uint64(829765)); nf.Gt(big.NewInt(500000000)) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
 }
@@ -107,6 +95,22 @@ func TestNumberForm_Ge(t *testing.T) {
 func TestNumberForm_Lt(t *testing.T) {
 	nf, _ := NewNumberForm(4658)
 	if nf.Lt(3700) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); nf.Lt(`largus`) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); nf.Lt(uint(44)) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); !nf.Lt(`500000000`) {
+		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); !nf.Lt(big.NewInt(500000000)) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
 
@@ -140,8 +144,20 @@ func TestNumberForm_Equal(t *testing.T) {
 		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
 	}
 
+	if nf, _ = NewNumberForm(`437829765`); nf.Equal(`junk`) {
+		t.Errorf("%s failed: Eq evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); !nf.Equal(big.NewInt(437829765)) {
+		t.Errorf("%s failed: Eq evaluation returned a bogus value", t.Name())
+	}
+
+	if nf, _ = NewNumberForm(`437829765`); nf.Equal(uint(748)) {
+		t.Errorf("%s failed: Eq evaluation returned a bogus value", t.Name())
+	}
+
 	if nf, _ = NewNumberForm(`437829765`); !nf.Equal(`437829765`) {
-		t.Errorf("%s failed: Gt evaluation returned a bogus value", t.Name())
+		t.Errorf("%s failed: Eq evaluation returned a bogus value", t.Name())
 	}
 
 	if nf, _ = NewNumberForm(uint64(329856)); !nf.Equal(uint64(329856)) {
@@ -183,7 +199,7 @@ func ExampleNumberForm_Ge() {
 
 func ExampleNumberForm_Gt() {
 	nf, _ := NewNumberForm(4658)
-	oth, _ := NewNumberForm(4501)
+	oth := `4501`
 	fmt.Printf("%s > %s: %t", nf, oth, nf.Gt(oth))
 	// Output: 4658 > 4501: true
 }

@@ -2,6 +2,7 @@ package objectid
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 )
 
@@ -94,13 +95,20 @@ func TestNewNameAndNumberForm(t *testing.T) {
 		``,
 		nf,
 		`blarg`,
+		big.NewInt(42),
+		big.NewInt(-42),
+		uint64(3),
+		-4,
+		uint(0),
+		new(big.Int),
+		`thing(432897659847395789374568903476893476937468934769843)`,
 	} {
 		_, err = NewNameAndNumberForm(v)
 		if idx%2 == 0 && err != nil {
-			t.Errorf("%s failed: %v", t.Name(), err)
+			t.Errorf("%s[%d] failed: %v", t.Name(), idx, err)
 			return
 		} else if err == nil && idx%2 != 0 {
-			t.Errorf("%s failed: parsed bogus value without error", t.Name())
+			t.Errorf("%s[%d] failed: parsed bogus value without error", t.Name(), idx)
 			return
 		}
 	}
@@ -111,5 +119,25 @@ func TestNewNameAndNumberForm(t *testing.T) {
 func TestBogusNameAndNumberForm(t *testing.T) {
 	if _, err := NewNameAndNumberForm("Enterprise(1)"); err == nil {
 		t.Errorf("%s failed: parsed bogus string value without error", t.Name())
+	}
+}
+
+func TestParseNaNFStr(t *testing.T) {
+	for idx, slice := range []string{
+		`cn(3)`,
+		`identifier(-3)`,
+	} {
+		_, err := parseNaNFstr(slice)
+		if err != nil {
+			if idx%2 == 0 {
+				t.Errorf("%s failed: unexpected error: %v", t.Name(), err)
+			}
+			continue
+		} else {
+			if idx%2 != 0 {
+				t.Errorf("%s failed: expected error, got nothing", t.Name())
+				continue
+			}
+		}
 	}
 }

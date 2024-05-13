@@ -2,6 +2,7 @@ package objectid
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 )
 
@@ -10,6 +11,34 @@ const (
 	testASN1JesseExample = `{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`
 	testASN1Bogus        = `iso(1) identified-organization(3}`
 )
+
+func ExampleASN1Notation_Dot() {
+	aNot, err := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	dot := aNot.Dot()
+	fmt.Println(dot)
+	// Output: 1.3.6.1.4.1.56521.999
+}
+
+/*
+This example demonstrates a bogus [DotNotation] output due to the presence
+of less than two (2) [NameAndNumberForm] instances within the receiver.
+
+[DotNotation] ALWAYS requires two (2) or more elements to be considered valid.
+*/
+func ExampleASN1Notation_Dot_bogus() {
+	aNot, err := NewASN1Notation(`{iso(1)}`)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	dot := aNot.Dot()
+	fmt.Println(dot)
+	// Output:
+}
 
 func ExampleASN1Notation_Index() {
 	aNot, err := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 56521 example(999)}`)
@@ -125,6 +154,19 @@ func TestASN1Notation001(t *testing.T) {
 		t.Errorf("%s failed; no error where one was expected", t.Name())
 		return
 	}
+
+	if _, err = NewASN1Notation([]NameAndNumberForm{
+		{identifier: `iso`, primaryIdentifier: NumberForm(*big.NewInt(1)), parsed: true},
+		{identifier: `identified-organization`, primaryIdentifier: NumberForm(*big.NewInt(3)), parsed: true},
+	}); err != nil {
+		t.Errorf("%s error: %v", t.Name(), err)
+		return
+	}
+
+	if _, err = NewASN1Notation([]NameAndNumberForm{}); err == nil {
+		t.Errorf("%s error: %v", t.Name(), err)
+		return
+	}
 }
 
 func TestASN1Notation_Index(t *testing.T) {
@@ -150,6 +192,21 @@ func TestASN1Notation_Index(t *testing.T) {
 
 func TestASN1Notation_bogus(t *testing.T) {
 	if _, err := NewASN1Notation(testASN1Bogus); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewASN1Notation(`iso(3) identified-organization(3)`); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewASN1Notation(`itu-t recommendation(-3)`); err == nil {
+		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
+		return
+	}
+
+	if _, err := NewASN1Notation(`joint-iso-itu-t thing`); err == nil {
 		t.Errorf("%s successfully parsed bogus value; expected an error", t.Name())
 		return
 	}
