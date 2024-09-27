@@ -179,6 +179,8 @@ func TestIsIdentifier(t *testing.T) {
 		``,
 		`itu-t`,
 		`itu?t`,
+		`dod`,
+		`bad--name`,
 	} {
 		var err error
 		is := isIdentifier(candidate)

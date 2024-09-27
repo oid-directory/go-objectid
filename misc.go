@@ -106,42 +106,50 @@ func isAlnum(r rune) bool {
 
 /*
 isIdentifier scans the input string val and judges whether
-it appears to qualify as an identifier, in that:
+it appears to qualify as an X.680 Identifier, in that:
 
-- it begins with a lower alpha
+- it begins with a lower alpha, ends in an alphanumeric
 - it contains only alphanumeric characters, hyphens or semicolons
-
-This is used, specifically, it identify an LDAP attributeType (with
-or without a tag), or an LDAP matchingRule.
+- it contains no consecutive hyphens
 */
-func isIdentifier(val string) bool {
-	if len(val) == 0 {
-		return false
-	}
-
-	// must begin with lower alpha.
-	if !isLower(rune(val[0])) {
-		return false
-	}
-
-	// can only end in alnum.
-	if !isAlnum(rune(val[len(val)-1])) {
-		return false
-	}
-
-	for i := 0; i < len(val); i++ {
-		ch := rune(val[i])
-		switch {
-		case isAlnum(ch):
-			// ok
-		case ch == ';', ch == '-':
-			// ok
-		default:
-			return false
-		}
-	}
-
-	return true
+func isIdentifier(val string) bool {                          
+        if len(val) == 0 {                                              
+                return false                                            
+        }                                                               
+                                                                        
+        // must begin with a lower alpha.                               
+        if !isLower(rune(val[0])) {                                     
+                return false                                            
+        }                                                               
+                                                                        
+        // can only end in alnum.                                       
+        if !isAlnum(rune(val[len(val)-1])) {                            
+                return false                                            
+        }                                                               
+                                                                        
+        // watch hyphens to avoid contiguous use                        
+        var lastHyphen bool                                             
+                                                                        
+        // iterate all characters in val, checking                      
+        // each one for validity.                               
+        for i := 0; i < len(val); i++ {                                 
+                ch := rune(val[i])                                      
+                switch {                                                
+                case isAlnum(ch):                                       
+                        lastHyphen = false                              
+                case ch == '-':                                         
+                        if lastHyphen {                                 
+                                // cannot use consecutive hyphens       
+                                return false                            
+                        }                                               
+                        lastHyphen = true                               
+                default:                                                
+                        // invalid character (none of [a-zA-Z0-9\-])    
+                        return false                                    
+                }                                                       
+        }                                                               
+                                                                        
+        return true                                                     
 }
 
 /*
