@@ -1,7 +1,8 @@
 package objectid
 
 /*
-asn.go handles ASN1Notation operations. For ASN.1 encoding/decoding, see codec.go.
+asn.go handles ASN1Notation operations. For object
+identifier encoding/decoding, see dot.go.
 */
 
 /*
