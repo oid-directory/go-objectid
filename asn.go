@@ -100,7 +100,7 @@ func (r ASN1Notation) Index(idx int) (nanf NameAndNumberForm, ok bool) {
 			}
 		} else if idx > L {
 			nanf = r[L-1]
-		} else {
+		} else if idx < L {
 			nanf = r[idx]
 		}
 	}
@@ -242,30 +242,50 @@ is an ancestor of the input value, which can be string or [ASN1Notation].
 */
 func (r ASN1Notation) AncestorOf(asn any) (anc bool) {
 	if !r.IsZero() {
-		var A *ASN1Notation
-
-		switch tv := asn.(type) {
-		case string:
-			A, _ = NewASN1Notation(tv)
-		case *ASN1Notation:
-			if tv != nil {
-				A = tv
+		if A := assertASN1Notation(asn); !A.IsZero() {
+			if A.Len() > r.Len() {
+				anc = r.matchASN1(A, 0)
 			}
-		case ASN1Notation:
-			if tv.Len() >= 0 {
-				A = &tv
-			}
-		}
-
-		if A.Len() > r.Len() {
-			anc = r.matchASN1(A)
 		}
 	}
 
 	return
 }
 
-func (r ASN1Notation) matchASN1(asn *ASN1Notation) (matched bool) {
+/*
+ChildOf returns a Boolean value indicative of whether the receiver is
+a direct superior (parent) of the input value, which can be string or
+[ASN1Notation].
+*/
+func (r ASN1Notation) ChildOf(asn any) (cof bool) {
+	if !r.IsZero() {
+		if A := assertASN1Notation(asn); !A.IsZero() {
+			if A.Len()-1 == r.Len() {
+				cof = r.matchASN1(A, 0)
+			}
+		}
+	}
+
+	return
+}
+
+/*
+SiblingOf returns a Boolean value indicative of whether the receiver is
+a sibling of the input value, which can be string or [ASN1Notation].
+*/
+func (r ASN1Notation) SiblingOf(asn any) (sof bool) {
+	if !r.IsZero() {
+		if A := assertASN1Notation(asn); !A.IsZero() {
+			if A.Len() == r.Len() && !A.Leaf().Equal(r.Leaf()) {
+				sof = r.matchASN1(A, -1)
+			}
+		}
+	}
+
+	return
+}
+
+func (r ASN1Notation) matchASN1(asn *ASN1Notation, off int) (matched bool) {
 	L := r.Len()
 	ct := 0
 	for i := 0; i < L; i++ {
@@ -273,9 +293,31 @@ func (r ASN1Notation) matchASN1(asn *ASN1Notation) (matched bool) {
 		if y, ok := asn.Index(i); ok {
 			if x.Equal(y) {
 				ct++
+			} else if off == -1 && L-1 == i {
+				// sibling check should end in
+				// a FAILED match for the final
+				// arcs.
+				ct++
 			}
 		}
 	}
 
 	return ct == L
+}
+
+func assertASN1Notation(asn any) (A *ASN1Notation) {
+	switch tv := asn.(type) {
+	case string:
+		A, _ = NewASN1Notation(tv)
+	case *ASN1Notation:
+		if tv != nil {
+			A = tv
+		}
+	case ASN1Notation:
+		if tv.Len() >= 0 {
+			A = &tv
+		}
+	}
+
+	return
 }

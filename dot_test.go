@@ -239,6 +239,50 @@ func TestDotNotation_AncestorOf(t *testing.T) {
 	}
 }
 
+func TestDotNotation_ChildOf(t *testing.T) {
+	dot, _ := NewDotNotation(`1.3.6`)
+	chstr := `1.3.6.1`
+	child, err := NewDotNotation(chstr)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	for _, d := range []any{
+		chstr,
+		child,
+		*child,
+	} {
+		if !dot.ChildOf(d) {
+			t.Errorf("%s failed: child check returned bogus result",
+				t.Name())
+			return
+		}
+	}
+}
+
+func TestDotNotation_SiblingOf(t *testing.T) {
+	dot, _ := NewDotNotation(`1.3.6.1.2.1`)
+	chstr := `1.3.6.1.2.2`
+	child, err := NewDotNotation(chstr)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	for _, d := range []any{
+		chstr,
+		child,
+		*child,
+	} {
+		if !dot.SiblingOf(d) {
+			t.Errorf("%s failed: sibling check returned bogus result",
+				t.Name())
+			return
+		}
+	}
+}
+
 func TestDotNotation_codecov(t *testing.T) {
 	_, err := NewDotNotation(``)
 	if err == nil {

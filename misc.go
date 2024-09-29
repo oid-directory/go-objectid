@@ -112,44 +112,44 @@ it appears to qualify as an X.680 Identifier, in that:
 - it contains only alphanumeric characters, hyphens or semicolons
 - it contains no consecutive hyphens
 */
-func isIdentifier(val string) bool {                          
-        if len(val) == 0 {                                              
-                return false                                            
-        }                                                               
-                                                                        
-        // must begin with a lower alpha.                               
-        if !isLower(rune(val[0])) {                                     
-                return false                                            
-        }                                                               
-                                                                        
-        // can only end in alnum.                                       
-        if !isAlnum(rune(val[len(val)-1])) {                            
-                return false                                            
-        }                                                               
-                                                                        
-        // watch hyphens to avoid contiguous use                        
-        var lastHyphen bool                                             
-                                                                        
-        // iterate all characters in val, checking                      
-        // each one for validity.                               
-        for i := 0; i < len(val); i++ {                                 
-                ch := rune(val[i])                                      
-                switch {                                                
-                case isAlnum(ch):                                       
-                        lastHyphen = false                              
-                case ch == '-':                                         
-                        if lastHyphen {                                 
-                                // cannot use consecutive hyphens       
-                                return false                            
-                        }                                               
-                        lastHyphen = true                               
-                default:                                                
-                        // invalid character (none of [a-zA-Z0-9\-])    
-                        return false                                    
-                }                                                       
-        }                                                               
-                                                                        
-        return true                                                     
+func isIdentifier(val string) bool {
+	if len(val) == 0 {
+		return false
+	}
+
+	// must begin with a lower alpha.
+	if !isLower(rune(val[0])) {
+		return false
+	}
+
+	// can only end in alnum.
+	if !isAlnum(rune(val[len(val)-1])) {
+		return false
+	}
+
+	// watch hyphens to avoid contiguous use
+	var lastHyphen bool
+
+	// iterate all characters in val, checking
+	// each one for validity.
+	for i := 0; i < len(val); i++ {
+		ch := rune(val[i])
+		switch {
+		case isAlnum(ch):
+			lastHyphen = false
+		case ch == '-':
+			if lastHyphen {
+				// cannot use consecutive hyphens
+				return false
+			}
+			lastHyphen = true
+		default:
+			// invalid character (none of [a-zA-Z0-9\-])
+			return false
+		}
+	}
+
+	return true
 }
 
 /*

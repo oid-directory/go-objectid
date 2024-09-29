@@ -339,10 +339,10 @@ func (r DotNotation) Index(idx int) (a NumberForm, ok bool) {
 			}
 		} else if idx > L {
 			a = r[L-1]
-		} else {
+		} else if idx < L {
 			a = r[idx]
 		}
-		ok = true
+		ok = !a.IsZero()
 	}
 
 	return
@@ -371,36 +371,78 @@ is an ancestor of the input value, which can be string or [DotNotation].
 */
 func (r DotNotation) AncestorOf(dot any) (is bool) {
 	if !r.IsZero() {
-		var D *DotNotation
-
-		switch tv := dot.(type) {
-		case string:
-			D, _ = NewDotNotation(tv)
-		case *DotNotation:
-			if tv != nil {
-				D = tv
+		if D := assertDotNot(dot); !D.IsZero() {
+			if D.Len() > r.Len() {
+				is = r.matchDotNot(D, 0)
 			}
-		case DotNotation:
-			if tv.Len() >= 0 {
-				D = &tv
-			}
-		}
-
-		if D.Len() > r.Len() {
-			is = r.matchDotNot(D)
 		}
 	}
 
 	return
 }
 
-func (r DotNotation) matchDotNot(dot *DotNotation) bool {
+/*
+ChildOf returns a Boolean value indicative of whether the receiver is
+a direct superior (parent) of the input value, which can be string or
+[ASN1Notation].
+*/
+func (r DotNotation) ChildOf(asn any) (cof bool) {
+	if !r.IsZero() {
+		if D := assertDotNot(asn); !D.IsZero() {
+			if D.Len()-1 == r.Len() {
+				cof = r.matchDotNot(D, 0)
+			}
+		}
+	}
+
+	return
+}
+
+/*
+SiblingOf returns a Boolean value indicative of whether the receiver is
+a sibling of the input value, which can be string or [ASN1Notation].
+*/
+func (r DotNotation) SiblingOf(dot any) (sof bool) {
+	if !r.IsZero() {
+		if D := assertDotNot(dot); !D.IsZero() {
+			if D.Len() == r.Len() && !D.Leaf().Equal(r.Leaf()) {
+				sof = r.matchDotNot(D, -1)
+			}
+		}
+	}
+
+	return
+}
+
+func assertDotNot(dot any) (D *DotNotation) {
+	switch tv := dot.(type) {
+	case string:
+		D, _ = NewDotNotation(tv)
+	case *DotNotation:
+		if tv != nil {
+			D = tv
+		}
+	case DotNotation:
+		if tv.Len() >= 0 {
+			D = &tv
+		}
+	}
+
+	return
+}
+
+func (r DotNotation) matchDotNot(dot *DotNotation, off int) bool {
 	L := r.Len()
 	ct := 0
 	for i := 0; i < L; i++ {
 		x, _ := r.Index(i)
 		if y, ok := dot.Index(i); ok {
 			if x.Equal(y) {
+				ct++
+			} else if off == -1 && L-1 == i {
+				// sibling check should end in
+				// a FAILED match for the final
+				// arcs.
 				ct++
 			}
 		}

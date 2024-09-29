@@ -254,33 +254,68 @@ func TestASN1Notation_IsZero(t *testing.T) {
 	}
 }
 
-func TestASN1Notation_AncestorOf(t *testing.T) {
-	asn, err := NewASN1Notation(`{joint-iso-itu-t(2) asn1(1)}`)
+func TestASN1Notation_AncestorChildOf(t *testing.T) {
+	asn, _ := NewASN1Notation(`{iso(1)}`)
+	chstr := `{iso(1) identified-organization(3)}`
+	child, err := NewASN1Notation(chstr)
 	if err != nil {
-		t.Errorf("%s failed: %v", t.Name(), err)
+		t.Errorf(err.Error())
 		return
 	}
 
-	child, err := NewASN1Notation(`{iso(1) identified-organization(3) dod(6) internet(1)}`)
+	for _, d := range []any{
+		chstr,
+		child,
+		*child,
+	} {
+		if !asn.AncestorOf(d) {
+			t.Errorf("%s failed: ancestor check returned bogus result",
+				t.Name())
+			return
+		}
+	}
+}
+
+func TestASN1Notation_ChildOf(t *testing.T) {
+	asn, _ := NewASN1Notation(`{iso(1)}`)
+	chstr := `{iso(1) identified-organization(3)}`
+	child, err := NewASN1Notation(chstr)
 	if err != nil {
-		t.Errorf("%s failed: %v", t.Name(), err)
-		return
-	}
-	if asn.AncestorOf(child) {
-		t.Errorf("%s failed: ancestry check returned bogus result",
-			t.Name())
+		t.Errorf(err.Error())
 		return
 	}
 
-	if asn.AncestorOf(*child) {
-		t.Errorf("%s failed: ancestry check returned bogus result",
-			t.Name())
+	for _, d := range []any{
+		chstr,
+		child,
+		*child,
+	} {
+		if !asn.ChildOf(d) {
+			t.Errorf("%s failed: child check returned bogus result",
+				t.Name())
+			return
+		}
+	}
+}
+
+func TestASN1Notation_SiblingOf(t *testing.T) {
+	asn, _ := NewASN1Notation(`{joint-iso-itu-t(2) uuid(25)}`)
+	sibstr := `{joint-iso-itu-t(2) asn1(1)}`
+	sib, err := NewASN1Notation(sibstr)
+	if err != nil {
+		t.Errorf(err.Error())
 		return
 	}
 
-	if asn.AncestorOf(child.String()) {
-		t.Errorf("%s failed: ancestry check returned bogus result",
-			t.Name())
-		return
+	for _, d := range []any{
+		sibstr,
+		sib,
+		*sib,
+	} {
+		if !asn.SiblingOf(d) {
+			t.Errorf("%s failed: sibling check returned bogus result",
+				t.Name())
+			return
+		}
 	}
 }
