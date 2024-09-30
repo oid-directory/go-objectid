@@ -121,7 +121,7 @@ Valid input forms for ASN.1 values are:
   - string slices (e.g.: []string{"iso(1)", "identified-organization(3)" ...})
   - [NameAndNumberForm] slices ([][NameAndNumberForm]{...})
 
-Note that the following root node abbreviations are supported:
+Note that the following identifier-only root nodes are also supported:
 
   - `itu-t` resolves to itu-t(0)
   - `iso` resolves to iso(1)
