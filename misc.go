@@ -105,13 +105,20 @@ func isAlnum(r rune) bool {
 }
 
 /*
-isIdentifier scans the input string val and judges whether
-it appears to qualify as an X.680 Identifier, in that:
+IsIdentifier scans the input string val and judges whether it appears to
+qualify as an [ITU-T Rec. X.680] Identifier, in that:
 
-- it begins with a lower alpha, ends in an alphanumeric
-- it contains only alphanumeric characters, hyphens or semicolons
-- it contains no consecutive hyphens
+  - It is non-zero in length
+  - It begins with a lower alpha, ends in an alphanumeric
+  - It contains only alphanumeric characters or hyphens
+  - It contains no consecutive hyphens
+
+[ITU-T Rec. X.680]: https://www.itu.int/rec/T-REC-X.680
 */
+func IsIdentifier(val string) bool {
+	return isIdentifier(val)
+}
+
 func isIdentifier(val string) bool {
 	if len(val) == 0 {
 		return false

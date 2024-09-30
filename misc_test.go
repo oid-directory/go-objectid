@@ -183,7 +183,7 @@ func TestIsIdentifier(t *testing.T) {
 		`bad--name`,
 	} {
 		var err error
-		is := isIdentifier(candidate)
+		is := IsIdentifier(candidate)
 		if is && idx%2 != 0 {
 			err = errorf("%s failed: good value [%s] not cleared as an identifier", t.Name(), candidate)
 		} else if !is && idx%2 == 0 {
